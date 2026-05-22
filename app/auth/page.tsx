@@ -1,7 +1,7 @@
-import { AuthProvider } from "./_components/AuthProvider";
-import { GrainOverlay } from "./_components/icons";
-import { AuthAside } from "./_components/AuthAside";
-import { AuthFormArea } from "./_components/AuthFormArea";
+import { AuthProvider } from "@/components/auth/AuthProvider";
+import { GrainOverlay } from "@/components/auth/icons";
+import { AuthAside } from "@/components/auth/AuthAside";
+import { AuthFormArea } from "@/components/auth/AuthFormArea";
 
 export default function Page() {
   return (
