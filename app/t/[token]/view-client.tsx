@@ -134,7 +134,7 @@ export function ViewClient() {
               flipped={flipped}
             />
 
-            <aside className="flex flex-col gap-[14px] min-[880px]:min-h-0 min-[880px]:overflow-y-auto">
+            <aside className="flex flex-col gap-[14px] min-[880px]:min-h-0 min-[880px]:h-full min-[880px]:overflow-hidden">
               <WorksheetPanel
                 worksheet={worksheet}
                 pageIndex={pageIndex}

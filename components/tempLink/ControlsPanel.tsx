@@ -92,18 +92,18 @@ export function ControlsPanel({
   flipped, setFlipped,
 }: ControlsPanelProps) {
   return (
-    <section className="relative bg-(--color-surface) border border-(--color-border) p-[18px] pb-[16px]" aria-label="Camera controls">
+    <section className="relative bg-(--color-surface) border border-(--color-border) p-[18px] pb-[16px] min-[880px]:flex-1 min-[880px]:flex min-[880px]:flex-col min-[880px]:min-h-0 min-[880px]:overflow-hidden min-[880px]:p-[14px] min-[880px]:pb-[12px]" aria-label="Camera controls">
       <CropMark position="tl" />
       <CropMark position="tr" />
       <CropMark position="bl" />
       <CropMark position="br" />
 
-      <div className="flex items-center gap-[10px] mb-[14px]">
+      <div className="flex items-center gap-[10px] mb-[14px] min-[880px]:mb-[10px]">
         <span className="font-code text-[10px] tracking-[0.16em] uppercase text-(--color-primary)">02</span>
         <span className="font-code text-[10px] tracking-[0.16em] uppercase text-(--color-muted)">Camera</span>
       </div>
 
-      <div className="flex flex-col gap-[14px]">
+      <div className="flex flex-col gap-[14px] min-[880px]:gap-[10px]">
         <Slider
           label="Zoom"
           value={zoom}
