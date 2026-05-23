@@ -21,9 +21,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   return (
     <PaletteCtx.Provider value={palette}>
-      <ModeCtx.Provider value={{ mode, setMode }}>
-        {children}
-      </ModeCtx.Provider>
+      <ModeCtx.Provider value={{ mode, setMode }}>{children}</ModeCtx.Provider>
     </PaletteCtx.Provider>
   );
 }

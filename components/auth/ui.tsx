@@ -331,7 +331,7 @@ export function PaperCard({ children }: { children: React.ReactNode }) {
 
   return (
     <div
-      className="relative bg-(--color-surface) border border-(--color-border) px-9 pt-9 pb-8"
+      className="relative bg-(--color-surface) border border-(--color-border) px-9 pt-4 pb-4"
       style={{ boxShadow: shadow }}
     >
       <div

@@ -1,6 +1,5 @@
 "use client";
 
-import { useState, useEffect } from "react";
 import { useMode } from "./AuthProvider";
 import { PaperCard } from "./ui";
 import { SignInForm } from "./SignInForm";
@@ -8,15 +7,6 @@ import { SignUpForm } from "./SignUpForm";
 
 export function AuthFormArea() {
   const { mode, setMode } = useMode();
-  const [dateStr, setDateStr] = useState("");
-
-  useEffect(() => {
-    setDateStr(
-      new Date()
-        .toLocaleDateString("en-GB", { day: "2-digit", month: "2-digit", year: "numeric" })
-        .replace(/\//g, " / "),
-    );
-  }, []);
 
   return (
     <main className="relative grid place-items-center p-10 max-sm:p-8">
@@ -49,7 +39,6 @@ export function AuthFormArea() {
 
         <footer className="flex justify-between items-center font-code text-[10.5px] tracking-[0.08em] uppercase text-(--color-muted) px-1.5">
           <span>↳ /auth/{mode === "in" ? "sign-in" : "sign-up"}</span>
-          <span suppressHydrationWarning>{dateStr}</span>
         </footer>
       </div>
     </main>
