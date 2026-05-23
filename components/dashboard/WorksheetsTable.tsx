@@ -57,7 +57,6 @@ export function WorksheetsTable({ rows, source }: { rows: Worksheet[]; source: S
             </span>
             <span className="dash-col-source flex-shrink-0 w-[110px]">Source</span>
             <span className="dash-col-modified flex-shrink-0 w-[90px]">Modified</span>
-            <span className="dash-col-sessions flex-shrink-0 w-[60px]">Sessions</span>
             <span className="dash-col-actions flex-shrink-0 ml-auto">Actions</span>
           </div>
 
@@ -103,11 +102,6 @@ export function WorksheetsTable({ rows, source }: { rows: Worksheet[]; source: S
                 {/* Modified */}
                 <div className="dash-col-modified flex-shrink-0 w-[90px] font-code text-[10.5px] tracking-[0.14em] uppercase text-(--color-muted) tabular-nums">
                   {r.modified}
-                </div>
-
-                {/* Sessions */}
-                <div className={`dash-col-sessions flex-shrink-0 w-[60px] font-heading text-[22px] tabular-nums ${r.sessions === 0 ? "text-[color-mix(in_oklab,var(--color-muted),transparent_30%)]" : "text-(--color-foreground)"}`}>
-                  {r.sessions}
                 </div>
 
                 {/* Actions */}

@@ -28,8 +28,7 @@ export function DashboardClient() {
       const q = search.trim().toLowerCase();
       r = r.filter((x) => x.name.toLowerCase().includes(q) || x.path.toLowerCase().includes(q));
     }
-    if (sort === "Name")     r = [...r].sort((a, b) => a.name.localeCompare(b.name));
-    if (sort === "Sessions") r = [...r].sort((a, b) => b.sessions - a.sessions);
+    if (sort === "Name") r = [...r].sort((a, b) => a.name.localeCompare(b.name));
     return r;
   }, [source, search, sort]);
 
