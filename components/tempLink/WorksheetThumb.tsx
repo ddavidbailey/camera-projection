@@ -13,7 +13,7 @@ export function WorksheetThumb({ pageIndex = 0 }: { pageIndex?: number }) {
   const y = py + 4;
 
   return (
-    <svg viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="xMidYMid meet">
+    <svg className="w-full h-full block" viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="xMidYMid meet">
       <rect x={px} y={y}     width={v.heading}       height="3"   className="o-band" rx="0.4" />
       <rect x={px} y={y + 7} width={v.heading * 0.6} height="1.2" className="o-band" opacity="0.4" rx="0.4" />
 

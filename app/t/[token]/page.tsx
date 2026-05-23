@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import "./view.css";
 import { ViewClient } from "./view-client";
 
 export const metadata: Metadata = {
