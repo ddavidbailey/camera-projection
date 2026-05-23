@@ -2,9 +2,9 @@
 
 import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
-import { Logomark }       from "@/components/tempLink/Logomark";
-import { CameraView }     from "@/components/tempLink/CameraView";
-import { ControlsPanel }  from "@/components/tempLink/ControlsPanel";
+import { Logomark } from "@/components/tempLink/Logomark";
+import { CameraView } from "@/components/tempLink/CameraView";
+import { ControlsPanel } from "@/components/tempLink/ControlsPanel";
 import { WorksheetPanel } from "@/components/tempLink/WorksheetPanel";
 import type { CameraState } from "@/components/tempLink/CameraView";
 
@@ -14,13 +14,13 @@ const WORKSHEETS = [
 ] as const;
 
 export function ViewClient() {
-  const [cameraState,    setCameraState]    = useState<CameraState>("idle");
-  const [zoom,           setZoom]           = useState(1);
-  const [brightness,     setBrightness]     = useState(1);
+  const [cameraState, setCameraState] = useState<CameraState>("idle");
+  const [zoom, setZoom] = useState(1);
+  const [brightness, setBrightness] = useState(1);
   const [overlayOpacity, setOverlayOpacity] = useState(0.85);
-  const [torch,          setTorch]          = useState(false);
-  const [flipped,        setFlipped]        = useState(false);
-  const [pageIndex,      setPageIndex]      = useState(0);
+  const [torch, setTorch] = useState(false);
+  const [flipped, setFlipped] = useState(false);
+  const [pageIndex, setPageIndex] = useState(0);
 
   // Check existing camera permission on mount — auto-start if already granted,
   // jump to denied state if blocked. Safari may not support querying "camera",
@@ -51,7 +51,9 @@ export function ViewClient() {
         // native prompt and resolve the state from there.
       });
 
-    return () => { status?.removeEventListener("change", onChange); };
+    return () => {
+      status?.removeEventListener("change", onChange);
+    };
   }, []);
 
   // Paper detection is simulated — real detection will wire in OpenCV.js
@@ -74,7 +76,7 @@ export function ViewClient() {
 
   return (
     <div
-      className="relative z-[1] flex flex-col min-h-dvh font-ui antialiased [text-rendering:optimizeLegibility] overflow-x-hidden text-(--color-foreground) bg-(--color-background) min-[880px]:h-dvh min-[880px]:overflow-hidden"
+      className="relative z-1 flex flex-col min-h-dvh font-ui antialiased [text-rendering:optimizeLegibility] overflow-x-hidden text-(--color-foreground) bg-(--color-background) min-[880px]:h-dvh min-[880px]:overflow-hidden"
       data-palette="paper"
     >
       {/* Subtle radial background gradient */}
@@ -88,17 +90,24 @@ export function ViewClient() {
       />
 
       <header
-        className="relative z-[2] border-b"
+        className="relative z-2 border-b"
         style={{
-          background: "color-mix(in oklab, var(--color-background), transparent 18%)",
-          borderColor: "color-mix(in oklab, var(--color-border), transparent 40%)",
+          background:
+            "color-mix(in oklab, var(--color-background), transparent 18%)",
+          borderColor:
+            "color-mix(in oklab, var(--color-border), transparent 40%)",
           backdropFilter: "blur(8px) saturate(110%)",
         }}
       >
         <div className="w-full max-w-[1480px] mx-auto px-8 max-[720px]:px-[18px] flex items-center gap-[18px] h-14">
-          <Link href="/" className="inline-flex items-center gap-[9px] text-(--color-foreground) no-underline">
+          <Link
+            href="/"
+            className="inline-flex items-center gap-[9px] text-(--color-foreground) no-underline"
+          >
             <Logomark />
-            <span className="font-heading text-[19px] tracking-[-0.01em]">Tracelight</span>
+            <span className="font-heading text-[19px] tracking-[-0.01em]">
+              Tracelight
+            </span>
             <span className="font-code text-[10px] uppercase tracking-[0.14em] text-(--color-muted) px-[7px] py-[3px] border border-(--color-border) rounded-full ml-1">
               beta
             </span>
@@ -110,7 +119,7 @@ export function ViewClient() {
         </div>
       </header>
 
-      <main className="flex-1 pt-[18px] pb-7 relative z-[1] min-[880px]:flex min-[880px]:flex-col min-[880px]:min-h-0">
+      <main className="flex-1 pt-[18px] pb-7 relative z-1 min-[880px]:flex min-[880px]:flex-col min-[880px]:min-h-0">
         <div className="w-full max-w-[1480px] mx-auto px-8 max-[720px]:px-[18px] min-[880px]:flex-1 min-[880px]:min-h-0 min-[880px]:flex min-[880px]:flex-col">
           <div className="grid grid-cols-[minmax(0,1fr)_260px] gap-[22px] items-start max-[880px]:grid-cols-1 min-[880px]:flex-1 min-[880px]:min-h-0 min-[880px]:items-stretch">
             <CameraView
