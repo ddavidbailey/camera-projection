@@ -1,8 +1,14 @@
 import { createAuthClient } from "better-auth/react";
 
-export const authClient = createAuthClient({});
+export const authClient = createAuthClient({
+  baseURL: process.env.BETTER_AUTH_URL as string,
+});
 
-export async function emailSignIn(email: string, password: string, rememberMe: boolean) {
+export async function emailSignIn(
+  email: string,
+  password: string,
+  rememberMe: boolean,
+) {
   return authClient.signIn.email({
     email,
     password,
@@ -10,7 +16,11 @@ export async function emailSignIn(email: string, password: string, rememberMe: b
   });
 }
 
-export async function emailSignUp(name: string, email: string, password: string) {
+export async function emailSignUp(
+  name: string,
+  email: string,
+  password: string,
+) {
   return authClient.signUp.email({
     name,
     email,
