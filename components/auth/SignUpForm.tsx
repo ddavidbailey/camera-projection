@@ -1,6 +1,7 @@
 "use client";
 
 import { SubmitEvent, useState } from "react";
+import { useRouter } from "next/navigation";
 import { usePalette } from "./AuthProvider";
 import { Field, PasswordField, OAuthChip, CheckBox } from "./ui";
 import { GoogleGlyph, DropboxGlyph } from "./icons";
@@ -8,6 +9,7 @@ import { emailSignUp } from "@/utils/auth-client";
 import { googleSignInAction, dropboxSignInAction } from "@/app/actions/social-auth";
 
 export function SignUpForm() {
+  const router = useRouter();
   const palette = usePalette();
   const [name, setName] = useState("");
   const [org, setOrg] = useState("");
@@ -29,6 +31,7 @@ export function SignUpForm() {
       return;
     }
     setSubmitting(false);
+    router.replace("/dashboard");
   };
 
   const submitBase =

@@ -7,7 +7,6 @@ export async function emailSignIn(email: string, password: string, rememberMe: b
     email,
     password,
     rememberMe,
-    callbackURL: "/dashboard",
   });
 }
 
@@ -16,7 +15,6 @@ export async function emailSignUp(name: string, email: string, password: string)
     name,
     email,
     password,
-    callbackURL: "/dashboard",
   });
 }
 
