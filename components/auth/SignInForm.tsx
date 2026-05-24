@@ -4,6 +4,7 @@ import { SubmitEvent, useState } from "react";
 import { usePalette } from "./AuthProvider";
 import { Field, PasswordField, OAuthChip, CheckBox } from "./ui";
 import { GoogleGlyph, DropboxGlyph } from "./icons";
+import { emailSignIn, googleSignIn, dropboxSignIn } from "@/utils/auth-client";
 
 export function SignInForm() {
   const palette = usePalette();
@@ -12,16 +13,20 @@ export function SignInForm() {
   const [remember, setRemember] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  const handleSubmit = (e: SubmitEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: SubmitEvent<HTMLFormElement>) => {
     e.preventDefault();
+    setError(null);
     setSubmitting(true);
-    // TODO: authClient.signIn.email({ email, password: pwd, rememberMe: remember })
-    setTimeout(() => {
+    const { error: err } = await emailSignIn(email, pwd, remember);
+    if (err) {
+      setError(err.message ?? "Sign in failed.");
       setSubmitting(false);
-      setSubmitted(true);
-      setTimeout(() => setSubmitted(false), 2200);
-    }, 900);
+      return;
+    }
+    setSubmitting(false);
+    setSubmitted(true);
   };
 
   const submitBase =
@@ -50,9 +55,16 @@ export function SignInForm() {
       </header>
 
       <div className="grid grid-cols-2 gap-2 max-sm:grid-cols-1">
-        {/* TODO: authClient.signIn.social({ provider: 'google' }) */}
-        <OAuthChip icon={<GoogleGlyph />} label="Continue with Google" />
-        <OAuthChip icon={<DropboxGlyph />} label="Continue with Dropbox" />
+        <OAuthChip
+          icon={<GoogleGlyph />}
+          label="Continue with Google"
+          onClick={googleSignIn}
+        />
+        <OAuthChip
+          icon={<DropboxGlyph />}
+          label="Continue with Dropbox"
+          onClick={dropboxSignIn}
+        />
       </div>
 
       <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-3 my-0.5">
@@ -77,6 +89,12 @@ export function SignInForm() {
         onChange={setPwd}
         autoComplete="current-password"
       />
+
+      {error && (
+        <p className="font-code text-[10.5px] tracking-[0.08em] text-(--color-primary) -mt-1">
+          {error}
+        </p>
+      )}
 
       <div className="flex items-center justify-between gap-3 flex-wrap">
         <CheckBox checked={remember} onChange={setRemember}>
@@ -115,7 +133,6 @@ export function SignInForm() {
           </svg>
         </span>
       </button>
-
     </form>
   );
 }

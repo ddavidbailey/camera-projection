@@ -1,19 +1,30 @@
-import { createAuthClient } from "better-auth/react"; // make sure to import from better-auth/react
+import { createAuthClient } from "better-auth/react";
 
-export const authClient = createAuthClient({
-  //you can pass client configuration here
-});
+export const authClient = createAuthClient({});
 
-export async function dropboxSignIn() {
-  await authClient.signIn.social({
-    provider: "dropbox",
+export async function emailSignIn(email: string, password: string, rememberMe: boolean) {
+  return authClient.signIn.email({
+    email,
+    password,
+    rememberMe,
+    callbackURL: "/dashboard",
   });
+}
+
+export async function signOut() {
+  return authClient.signOut();
 }
 
 export async function googleSignIn() {
   await authClient.signIn.social({
     provider: "google",
+    callbackURL: "/dashboard",
   });
 }
 
-export const { signIn, signUp, useSession } = createAuthClient();
+export async function dropboxSignIn() {
+  await authClient.signIn.social({
+    provider: "dropbox",
+    callbackURL: "/dashboard",
+  });
+}

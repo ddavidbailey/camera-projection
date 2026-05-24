@@ -13,7 +13,20 @@
   --color-mark: #c7b891;
 }
 
-/* Dusk palette — activated via data-palette="dusk" on a container */
+/* Dusk palette — system dark mode or data-palette="dusk" on a container */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --color-background: #1a1b24;
+    --color-surface: #22232e;
+    --color-foreground: #ede7d6;
+    --color-muted: #8e8a7d;
+    --color-border: #33343f;
+    --color-primary: oklch(0.72 0.13 28);
+    --color-secondary: oklch(0.78 0.09 84);
+    --color-mark: #4a4b58;
+  }
+}
+
 [data-palette="dusk"] {
   --color-background: #1a1b24;
   --color-surface: #22232e;

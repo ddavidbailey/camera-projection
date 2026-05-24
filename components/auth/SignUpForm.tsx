@@ -46,9 +46,8 @@ export function SignUpForm() {
       </header>
 
       <div className="grid grid-cols-2 gap-2 max-sm:grid-cols-1">
-        {/* TODO: authClient.signIn.social({ provider: 'google' }) */}
-        <OAuthChip icon={<GoogleGlyph />} label="Sign up with Google" />
-        <OAuthChip icon={<DropboxGlyph />} label="Sign up with Dropbox" />
+        <OAuthChip icon={<GoogleGlyph />} label="Continue with Google" />
+        <OAuthChip icon={<DropboxGlyph />} label="Continue with Dropbox" />
       </div>
 
       <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-3 my-0.5">
