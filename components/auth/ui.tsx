@@ -253,17 +253,14 @@ export function PasswordField({
 export function OAuthChip({
   icon,
   label,
-  onClick,
 }: {
   icon: React.ReactNode;
   label: string;
-  onClick?: () => void;
 }) {
   return (
     <button
-      type="button"
-      onClick={onClick}
-      className="relative inline-flex items-center gap-2.5 px-3.5 py-[11px] bg-[color-mix(in_oklab,var(--color-surface),white_4%)] border border-(--color-border) rounded-[10px] text-(--color-foreground) text-[13px] font-medium cursor-pointer text-left transition-[background,border-color,transform] duration-180 hover:bg-[color-mix(in_oklab,var(--color-surface),white_12%)] hover:border-[color-mix(in_oklab,var(--color-border),var(--color-foreground)_10%)] active:translate-y-px"
+      type="submit"
+      className="relative inline-flex w-full items-center gap-2.5 px-3.5 py-[11px] bg-[color-mix(in_oklab,var(--color-surface),white_4%)] border border-(--color-border) rounded-[10px] text-(--color-foreground) text-[13px] font-medium cursor-pointer text-left transition-[background,border-color,transform] duration-180 hover:bg-[color-mix(in_oklab,var(--color-surface),white_12%)] hover:border-[color-mix(in_oklab,var(--color-border),var(--color-foreground)_10%)] active:translate-y-px"
     >
       <span className="grid place-items-center text-(--color-foreground)">
         {icon}

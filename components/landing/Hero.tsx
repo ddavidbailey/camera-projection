@@ -28,7 +28,7 @@ export function Hero() {
           </p>
           <div className="flex items-center gap-[18px] flex-wrap">
             <Link
-              href="/auth"
+              href="/auth?mode=up"
               className="group font-code text-[11px] font-medium tracking-[0.14em] uppercase no-underline px-4 py-[9px] bg-(--color-foreground) text-(--color-surface) border border-(--color-foreground) rounded-[10px] inline-flex items-center gap-2 hover:-translate-y-px transition-transform duration-180"
             >
               Sign up{" "}

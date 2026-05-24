@@ -44,13 +44,13 @@ export function Header() {
 
         <div className="inline-flex items-center gap-2.5">
           <Link
-            href="/auth"
+            href="/auth?mode=in"
             className="font-code text-[11px] tracking-[0.14em] uppercase text-(--color-muted) no-underline py-2 hover:text-(--color-foreground) transition-colors duration-180"
           >
             Sign in
           </Link>
           <Link
-            href="/auth"
+            href="/auth?mode=up"
             className="group font-code text-[11px] font-medium tracking-[0.14em] uppercase no-underline px-4 py-[9px] bg-(--color-foreground) text-(--color-surface) border border-(--color-foreground) rounded-[10px] inline-flex items-center gap-2 hover:-translate-y-px transition-transform duration-180"
           >
             Sign up <span className="inline-block transition-transform duration-200 group-hover:translate-x-0.5">→</span>

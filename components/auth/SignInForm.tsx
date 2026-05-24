@@ -4,7 +4,8 @@ import { SubmitEvent, useState } from "react";
 import { usePalette } from "./AuthProvider";
 import { Field, PasswordField, OAuthChip, CheckBox } from "./ui";
 import { GoogleGlyph, DropboxGlyph } from "./icons";
-import { emailSignIn, googleSignIn, dropboxSignIn } from "@/utils/auth-client";
+import { emailSignIn } from "@/utils/auth-client";
+import { googleSignInAction, dropboxSignInAction } from "@/app/actions/social-auth";
 
 export function SignInForm() {
   const palette = usePalette();
@@ -35,7 +36,7 @@ export function SignInForm() {
       : "bg-(--color-foreground) border-(--color-foreground) text-(--color-surface)";
 
   return (
-    <form className="flex flex-col gap-4" onSubmit={handleSubmit}>
+    <div className="flex flex-col gap-4">
       <header className="flex flex-col gap-3.5 mb-1.5">
         <div className="inline-flex items-center gap-2 font-code text-[10.5px] tracking-[0.16em] uppercase text-(--color-muted) whitespace-nowrap">
           <span className="w-1.5 h-1.5 rounded-full bg-(--color-primary) shadow-[0_0_0_3px_color-mix(in_oklab,var(--color-primary),transparent_80%)]" />
@@ -55,16 +56,12 @@ export function SignInForm() {
       </header>
 
       <div className="grid grid-cols-2 gap-2 max-sm:grid-cols-1">
-        <OAuthChip
-          icon={<GoogleGlyph />}
-          label="Continue with Google"
-          onClick={googleSignIn}
-        />
-        <OAuthChip
-          icon={<DropboxGlyph />}
-          label="Continue with Dropbox"
-          onClick={dropboxSignIn}
-        />
+        <form action={googleSignInAction}>
+          <OAuthChip icon={<GoogleGlyph />} label="Continue with Google" />
+        </form>
+        <form action={dropboxSignInAction}>
+          <OAuthChip icon={<DropboxGlyph />} label="Continue with Dropbox" />
+        </form>
       </div>
 
       <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-3 my-0.5">
@@ -75,6 +72,7 @@ export function SignInForm() {
         <span className="h-px bg-[linear-gradient(90deg,transparent,var(--color-border),transparent)]" />
       </div>
 
+      <form className="flex flex-col gap-4" onSubmit={handleSubmit}>
       <Field
         label="Email"
         type="email"
@@ -133,6 +131,7 @@ export function SignInForm() {
           </svg>
         </span>
       </button>
-    </form>
+      </form>
+    </div>
   );
 }

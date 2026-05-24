@@ -15,9 +15,9 @@ export const ModeCtx = createContext<ModeCtxValue>({
 });
 export const useMode = () => useContext(ModeCtx);
 
-export function AuthProvider({ children }: { children: React.ReactNode }) {
+export function AuthProvider({ children, initialMode = "in" }: { children: React.ReactNode; initialMode?: Mode }) {
   const [palette] = useState<PaletteKey>("paper");
-  const [mode, setMode] = useState<Mode>("in");
+  const [mode, setMode] = useState<Mode>(initialMode);
 
   return (
     <PaletteCtx.Provider value={palette}>

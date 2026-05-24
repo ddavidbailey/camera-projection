@@ -23,17 +23,3 @@ export async function emailSignUp(name: string, email: string, password: string)
 export async function signOut() {
   return authClient.signOut();
 }
-
-export async function googleSignIn() {
-  await authClient.signIn.social({
-    provider: "google",
-    callbackURL: "/dashboard",
-  });
-}
-
-export async function dropboxSignIn() {
-  await authClient.signIn.social({
-    provider: "dropbox",
-    callbackURL: "/dashboard",
-  });
-}
