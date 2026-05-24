@@ -1,7 +1,9 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { Logomark } from "@/components/tempLink/Logomark";
+import { authClient, signOut } from "@/utils/auth-client";
 
 interface TopStripProps {
   search: string;
@@ -9,6 +11,15 @@ interface TopStripProps {
 }
 
 export function TopStrip({ search, setSearch }: TopStripProps) {
+  const { data: session } = authClient.useSession();
+  const router = useRouter();
+  const email = session?.user?.email ?? "";
+  const initial = email.charAt(0).toUpperCase() || "?";
+
+  async function handleSignOut() {
+    await signOut();
+    router.push("/auth");
+  }
   return (
     <header
       className="sticky top-0 z-10 border-b"
@@ -60,16 +71,17 @@ export function TopStrip({ search, setSearch }: TopStripProps) {
 
         <button
           type="button"
+          onClick={handleSignOut}
           className="inline-flex items-center gap-[9px] pl-[5px] pr-[10px] py-[5px] border border-(--color-border) rounded-full cursor-pointer"
           style={{ background: "color-mix(in oklab, var(--color-surface), transparent 30%)" }}
         >
           <span
             className="w-[22px] h-[22px] rounded-full bg-(--color-primary) text-(--color-surface) inline-grid place-items-center font-heading text-[12px]"
           >
-            A
+            {initial}
           </span>
           <span className="font-code text-[10.5px] tracking-[0.12em] uppercase text-(--color-muted)">
-            Anya
+            {email}
           </span>
         </button>
       </div>
