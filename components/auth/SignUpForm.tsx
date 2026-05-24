@@ -1,9 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { SubmitEvent, useState } from "react";
 import { usePalette } from "./AuthProvider";
 import { Field, PasswordField, OAuthChip, CheckBox } from "./ui";
 import { GoogleGlyph, DropboxGlyph } from "./icons";
+import { emailSignUp, googleSignIn, dropboxSignIn } from "@/utils/auth-client";
 
 export function SignUpForm() {
   const palette = usePalette();
@@ -13,13 +14,20 @@ export function SignUpForm() {
   const [pwd, setPwd] = useState("");
   const [agree, setAgree] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: SubmitEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!agree) return;
+    setError(null);
     setSubmitting(true);
-    // TODO: authClient.signUp.email({ name, email, password: pwd, callbackURL: '/dashboard' })
-    setTimeout(() => setSubmitting(false), 1200);
+    const { error: err } = await emailSignUp(name, email, pwd);
+    if (err) {
+      setError(err.message ?? "Sign up failed.");
+      setSubmitting(false);
+      return;
+    }
+    setSubmitting(false);
   };
 
   const submitBase =
@@ -46,8 +54,8 @@ export function SignUpForm() {
       </header>
 
       <div className="grid grid-cols-2 gap-2 max-sm:grid-cols-1">
-        <OAuthChip icon={<GoogleGlyph />} label="Continue with Google" />
-        <OAuthChip icon={<DropboxGlyph />} label="Continue with Dropbox" />
+        <OAuthChip icon={<GoogleGlyph />} label="Continue with Google" onClick={googleSignIn} />
+        <OAuthChip icon={<DropboxGlyph />} label="Continue with Dropbox" onClick={dropboxSignIn} />
       </div>
 
       <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-3 my-0.5">
@@ -91,6 +99,10 @@ export function SignUpForm() {
         showStrength
         autoComplete="new-password"
       />
+
+      {error && (
+        <p className="font-code text-[10.5px] tracking-[0.08em] text-(--color-primary) -mt-1">{error}</p>
+      )}
 
       <CheckBox checked={agree} onChange={setAgree} block>
         <span>
