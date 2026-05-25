@@ -43,7 +43,7 @@ export function HeroStage() {
         <defs>
           <clipPath id="paperReveal" clipPathUnits="userSpaceOnUse">
             <rect x="130" y="280" width="540" height="0">
-              <animate attributeName="height" values="0;360;360;0;0" keyTimes="0;0.4;0.55;0.95;1" dur="7s" repeatCount="indefinite" calcMode="spline" keySplines="0.42 0 0.58 1 ; 0 0 1 1 ; 0.42 0 0.58 1 ; 0 0 1 1" />
+              <animate attributeName="height" values="0;360;360;0;0" keyTimes="0;0.4;0.55;0.95;1" dur="7s" begin="1.5s" repeatCount="indefinite" calcMode="spline" keySplines="0.42 0 0.58 1 ; 0 0 1 1 ; 0.42 0 0.58 1 ; 0 0 1 1" />
             </rect>
           </clipPath>
           <clipPath id="paperShape" clipPathUnits="userSpaceOnUse">
@@ -113,10 +113,10 @@ export function HeroStage() {
 
         {/* Scan line */}
         <line className="stroke-(--home-beam) stroke-[1.4] drop-shadow-[0_0_4px_color-mix(in_oklab,var(--home-beam),transparent_30%)]" x1="210" x2="590" y1="280" y2="280">
-          <animate attributeName="y1" values="280;640;640;280;280" keyTimes="0;0.4;0.55;0.95;1" dur="7s" repeatCount="indefinite" calcMode="spline" keySplines="0.42 0 0.58 1 ; 0 0 1 1 ; 0.42 0 0.58 1 ; 0 0 1 1" />
-          <animate attributeName="y2" values="280;640;640;280;280" keyTimes="0;0.4;0.55;0.95;1" dur="7s" repeatCount="indefinite" calcMode="spline" keySplines="0.42 0 0.58 1 ; 0 0 1 1 ; 0.42 0 0.58 1 ; 0 0 1 1" />
-          <animate attributeName="x1" values="210;130;130;210;210" keyTimes="0;0.4;0.55;0.95;1" dur="7s" repeatCount="indefinite" calcMode="spline" keySplines="0.42 0 0.58 1 ; 0 0 1 1 ; 0.42 0 0.58 1 ; 0 0 1 1" />
-          <animate attributeName="x2" values="590;670;670;590;590" keyTimes="0;0.4;0.55;0.95;1" dur="7s" repeatCount="indefinite" calcMode="spline" keySplines="0.42 0 0.58 1 ; 0 0 1 1 ; 0.42 0 0.58 1 ; 0 0 1 1" />
+          <animate attributeName="y1" values="280;640;640;280;280" keyTimes="0;0.4;0.55;0.95;1" dur="7s" begin="1.5s" repeatCount="indefinite" calcMode="spline" keySplines="0.42 0 0.58 1 ; 0 0 1 1 ; 0.42 0 0.58 1 ; 0 0 1 1" />
+          <animate attributeName="y2" values="280;640;640;280;280" keyTimes="0;0.4;0.55;0.95;1" dur="7s" begin="1.5s" repeatCount="indefinite" calcMode="spline" keySplines="0.42 0 0.58 1 ; 0 0 1 1 ; 0.42 0 0.58 1 ; 0 0 1 1" />
+          <animate attributeName="x1" values="210;130;130;210;210" keyTimes="0;0.4;0.55;0.95;1" dur="7s" begin="1.5s" repeatCount="indefinite" calcMode="spline" keySplines="0.42 0 0.58 1 ; 0 0 1 1 ; 0.42 0 0.58 1 ; 0 0 1 1" />
+          <animate attributeName="x2" values="590;670;670;590;590" keyTimes="0;0.4;0.55;0.95;1" dur="7s" begin="1.5s" repeatCount="indefinite" calcMode="spline" keySplines="0.42 0 0.58 1 ; 0 0 1 1 ; 0.42 0 0.58 1 ; 0 0 1 1" />
         </line>
       </svg>
 

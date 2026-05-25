@@ -7,7 +7,7 @@ export function Hero() {
     <section className="py-10 sm:py-14 lg:py-[72px] relative">
       <Wrap className="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.05fr)] gap-12 lg:gap-16 items-center">
         <div>
-          <div className="inline-flex items-center gap-2 font-code text-[11px] tracking-[0.16em] uppercase text-(--color-muted) mb-5 sm:mb-[22px]">
+          <div className="inline-flex items-center gap-2 font-code text-[14px] tracking-[0.16em] uppercase text-(--color-muted) mb-5 sm:mb-[22px]">
             Tracelight · for workshops
           </div>
           <h1 className="font-heading font-normal text-[clamp(36px,5.6vw,72px)] leading-[1.02] tracking-[-0.02em] m-0 mb-5 sm:mb-[22px] text-(--color-foreground) text-balance">

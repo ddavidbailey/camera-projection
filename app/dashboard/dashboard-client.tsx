@@ -35,7 +35,7 @@ export function DashboardClient() {
   return (
     <div
       className="relative z-[1] flex flex-col min-h-dvh font-ui antialiased [text-rendering:optimizeLegibility] text-(--color-foreground) bg-(--color-background)"
-      data-palette="paper"
+
     >
       {/* Background gradient */}
       <div

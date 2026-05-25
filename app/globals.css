@@ -3,6 +3,7 @@
 /* ── Tracelight design tokens ────────────────────────────────────────────── */
 /* Paper palette — light mode default */
 :root {
+  --home-beam: oklch(0.78 0.05 218);
   --color-background: #efe7d6;
   --color-surface: #f8f2e4;
   --color-foreground: #1b1a17;
@@ -11,11 +12,13 @@
   --color-primary: oklch(0.66 0.13 52);
   --color-secondary: oklch(0.86 0.07 218);
   --color-mark: #c7b891;
+  --shadow-card: 0 1px 0 color-mix(in oklab, var(--color-surface), white 6%) inset, 0 30px 60px -40px rgba(0,0,0,0.25), 0 4px 14px -8px rgba(0,0,0,0.12);
 }
 
-/* Dusk palette — system dark mode or data-palette="dusk" on a container */
+/* Dusk palette — system dark mode */
 @media (prefers-color-scheme: dark) {
   :root {
+    --home-beam: oklch(0.78 0.09 84);
     --color-background: #1a1b24;
     --color-surface: #22232e;
     --color-foreground: #ede7d6;
@@ -24,18 +27,8 @@
     --color-primary: oklch(0.72 0.13 28);
     --color-secondary: oklch(0.78 0.09 84);
     --color-mark: #4a4b58;
+    --shadow-card: 0 1px 0 color-mix(in oklab, var(--color-surface), white 4%) inset, 0 30px 60px -30px rgba(0,0,0,0.5);
   }
-}
-
-[data-palette="dusk"] {
-  --color-background: #1a1b24;
-  --color-surface: #22232e;
-  --color-foreground: #ede7d6;
-  --color-muted: #8e8a7d;
-  --color-border: #33343f;
-  --color-primary: oklch(0.72 0.13 28);
-  --color-secondary: oklch(0.78 0.09 84);
-  --color-mark: #4a4b58;
 }
 
 @theme inline {
@@ -62,7 +55,6 @@
 body {
   background: var(--color-background);
   color: var(--color-foreground);
-  font-family: Arial, Helvetica, sans-serif;
 }
 
 /* ── Dashboard semantic colors ──────────────────────────────────────────── */
