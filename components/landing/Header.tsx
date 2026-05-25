@@ -30,17 +30,6 @@ export function Header() {
           </span>
         </Link>
 
-        <nav className="hidden md:flex items-center gap-7">
-          {(["#how", "#workshops", "#docs"] as const).map((href, i) => (
-            <a
-              key={href}
-              href={href}
-              className="font-code text-[11px] tracking-[0.14em] uppercase text-(--color-muted) no-underline hover:text-(--color-foreground) transition-colors duration-180"
-            >
-              {["How it works", "For workshops", "Docs"][i]}
-            </a>
-          ))}
-        </nav>
 
         <div className="inline-flex items-center gap-2.5">
           <Link

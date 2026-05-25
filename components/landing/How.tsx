@@ -3,6 +3,7 @@ import { Wrap } from "./Wrap";
 function StepUpload() {
   return (
     <svg
+      className="w-full h-full"
       viewBox="0 0 240 140"
       preserveAspectRatio="xMidYMid meet"
       aria-hidden="true"
@@ -60,7 +61,7 @@ function StepUpload() {
         className="fill-[color-mix(in_oklab,var(--color-primary),transparent_78%)] stroke-[color-mix(in_oklab,var(--color-primary),transparent_40%)] stroke-[0.8]"
       />
       <path
-        d="M 134 64 H 168 M 162 58 L 168 64 L 162 70"
+        d="M 168 70 H 134 M 140 64 L 134 70 L 140 76"
         stroke="var(--color-primary)"
         strokeWidth="1.6"
         fill="none"
@@ -68,10 +69,10 @@ function StepUpload() {
         strokeLinejoin="round"
       />
       <rect
-        x="178"
-        y="42"
-        width="48"
-        height="36"
+        x="176"
+        y="50"
+        width="53"
+        height="40"
         rx="6"
         fill="color-mix(in oklab, var(--color-background), white 2%)"
         stroke="var(--color-border)"
@@ -79,14 +80,15 @@ function StepUpload() {
       />
       <text
         x="202"
-        y="64"
+        y="70"
         textAnchor="middle"
+        dominantBaseline="central"
         fontFamily="var(--font-jetbrains-mono), monospace"
-        fontSize="8"
+        fontSize="10"
         letterSpacing="0.16em"
         fill="var(--color-muted)"
       >
-        DRIVE
+        DB
       </text>
     </svg>
   );
@@ -95,6 +97,7 @@ function StepUpload() {
 function StepShare() {
   return (
     <svg
+      className="w-full h-full"
       viewBox="0 0 240 140"
       preserveAspectRatio="xMidYMid meet"
       aria-hidden="true"
@@ -170,6 +173,7 @@ function StepShare() {
 function StepTrace() {
   return (
     <svg
+      className="w-full h-full"
       viewBox="0 0 240 140"
       preserveAspectRatio="xMidYMid meet"
       aria-hidden="true"
@@ -294,6 +298,10 @@ export function How() {
     >
       <Wrap>
         <div className="flex items-end justify-between gap-6 mb-10 sm:mb-12 flex-wrap">
+          <div>
+            <div className="inline-flex items-center gap-2 font-code text-[14px] tracking-[0.16em] uppercase text-(--color-muted) mb-5">
+              How it works
+            </div>
           <h2 className="font-heading font-normal text-[clamp(24px,3.2vw,40px)] leading-[1.1] tracking-[-0.015em] m-0 max-w-[22ch] text-balance text-(--color-foreground)">
             From upload to{" "}
             <em className="font-heading italic text-(--color-primary)">
@@ -301,6 +309,7 @@ export function How() {
             </em>
             , in three steps.
           </h2>
+          </div>
           <p className="text-[14px] sm:text-[14.5px] leading-[1.55] text-(--color-muted) max-w-[38ch] m-0 text-pretty">
             Hosts run the workshop. Participants just open a link — no install,
             no account needed.
