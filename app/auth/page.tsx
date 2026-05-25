@@ -11,7 +11,7 @@ export default async function Page({ searchParams }: { searchParams: Promise<{ m
     <AuthProvider initialMode={initialMode}>
       <div
         className="font-ui text-(--color-foreground) bg-(--color-background) min-h-screen relative antialiased [text-rendering:optimizeLegibility]"
-        data-palette="paper"
+
       >
         <GrainOverlay />
 

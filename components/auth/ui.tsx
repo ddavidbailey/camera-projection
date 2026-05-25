@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo, useId } from "react";
-import { usePalette } from "./AuthProvider";
 
 /* ── CropMark ────────────────────────────────────────────────────────────── */
 export function CropMark({
@@ -284,11 +283,7 @@ export function CheckBox({
   children: React.ReactNode;
   block?: boolean;
 }) {
-  const palette = usePalette();
-  const checkedClass =
-    palette === "dusk"
-      ? "bg-(--color-surface) border-(--color-surface) text-[var(--color-background)]"
-      : "bg-(--color-foreground) border-(--color-foreground) text-(--color-surface)";
+  const checkedClass = "bg-(--color-foreground) border-(--color-foreground) text-(--color-surface)";
 
   return (
     <label
@@ -320,16 +315,10 @@ export function CheckBox({
 }
 
 export function PaperCard({ children }: { children: React.ReactNode }) {
-  const palette = usePalette();
-  const shadow =
-    palette === "dusk"
-      ? "0 1px 0 color-mix(in oklab, var(--color-surface), white 4%) inset, 0 30px 60px -30px rgba(0,0,0,0.5)"
-      : "0 1px 0 color-mix(in oklab, var(--color-surface), white 6%) inset, 0 30px 60px -40px rgba(0,0,0,0.25), 0 4px 14px -8px rgba(0,0,0,0.12)";
-
   return (
     <div
       className="relative bg-(--color-surface) border border-(--color-border) px-9 pt-4 pb-4"
-      style={{ boxShadow: shadow }}
+      style={{ boxShadow: "var(--shadow-card)" }}
     >
       <div
         className="absolute inset-0 overflow-hidden pointer-events-none z-1"

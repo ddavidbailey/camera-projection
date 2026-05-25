@@ -2,7 +2,6 @@
 
 import { SubmitEvent, useState } from "react";
 import { useRouter } from "next/navigation";
-import { usePalette } from "./AuthProvider";
 import { Field, PasswordField, OAuthChip, CheckBox } from "./ui";
 import { GoogleGlyph, DropboxGlyph } from "./icons";
 import { emailSignUp } from "@/utils/auth-client";
@@ -10,7 +9,6 @@ import { googleSignInAction, dropboxSignInAction } from "@/app/actions/social-au
 
 export function SignUpForm() {
   const router = useRouter();
-  const palette = usePalette();
   const [name, setName] = useState("");
   const [org, setOrg] = useState("");
   const [email, setEmail] = useState("");
@@ -34,10 +32,7 @@ export function SignUpForm() {
     router.replace("/dashboard");
   };
 
-  const submitBase =
-    palette === "dusk"
-      ? "bg-(--color-surface) border-[color-mix(in_oklab,var(--color-surface),white_8%)] text-[var(--color-background)]"
-      : "bg-(--color-foreground) border-(--color-foreground) text-(--color-surface)";
+  const submitBase = "bg-(--color-foreground) border-(--color-foreground) text-(--color-surface)";
 
   return (
     <div className="flex flex-col gap-4">

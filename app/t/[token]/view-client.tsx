@@ -77,7 +77,7 @@ export function ViewClient() {
   return (
     <div
       className="relative z-1 flex flex-col min-h-dvh font-ui antialiased [text-rendering:optimizeLegibility] overflow-x-hidden text-(--color-foreground) bg-(--color-background) min-[880px]:h-dvh min-[880px]:overflow-hidden"
-      data-palette="paper"
+
     >
       {/* Subtle radial background gradient */}
       <div
