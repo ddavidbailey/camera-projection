@@ -5,7 +5,7 @@ import { Footer } from "@/components/landing/Footer";
 
 export default function Home() {
   return (
-    <div className="[--home-beam:oklch(0.78_0.05_218)] relative z-1 flex flex-col min-h-screen bg-(--color-background) text-(--color-foreground) font-ui antialiased [text-rendering:optimizeLegibility]">
+    <div className="relative z-1 flex flex-col min-h-screen bg-(--color-background) text-(--color-foreground) font-ui antialiased [text-rendering:optimizeLegibility]">
       <div
         className="fixed inset-0 pointer-events-none z-0"
         aria-hidden="true"

@@ -3,6 +3,7 @@
 /* ── Tracelight design tokens ────────────────────────────────────────────── */
 /* Paper palette — light mode default */
 :root {
+  --home-beam: oklch(0.78 0.05 218);
   --color-background: #efe7d6;
   --color-surface: #f8f2e4;
   --color-foreground: #1b1a17;
@@ -17,6 +18,7 @@
 /* Dusk palette — system dark mode */
 @media (prefers-color-scheme: dark) {
   :root {
+    --home-beam: oklch(0.78 0.09 84);
     --color-background: #1a1b24;
     --color-surface: #22232e;
     --color-foreground: #ede7d6;
