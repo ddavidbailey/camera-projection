@@ -1,8 +1,16 @@
 "use client";
 
+import { useEffect, useState } from "react";
+import { authClient } from "@/utils/auth-client";
+import { getIntegrationStatus, disconnectIntegration, type Integrations } from "@/app/actions/integrations";
 import { DriveMark, DropMark } from "./icons";
 import { CropMark } from "./CropMark";
 import type { SourceFilter } from "./data";
+
+const DEFAULT: Integrations = {
+  google_drive: { connected: false, email: "" },
+  dropbox:      { connected: false, email: "" },
+};
 
 interface SourcesPanelProps {
   active: SourceFilter;
@@ -20,6 +28,26 @@ function countBadge(active: boolean) {
 }
 
 export function SourcesPanel({ active, setActive, counts }: SourcesPanelProps) {
+  const [integrations, setIntegrations] = useState<Integrations>(DEFAULT);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    getIntegrationStatus()
+      .then((data) => { setIntegrations(data); setLoading(false); })
+      .catch(() => setLoading(false));
+  }, []);
+
+  async function connectGoogle() {
+    await authClient.linkSocial({ provider: "google", callbackURL: "/dashboard" });
+  }
+
+  async function handleDisconnectGoogle() {
+    await disconnectIntegration("google_drive");
+    setIntegrations((prev) => ({ ...prev, google_drive: { connected: false, email: "" } }));
+  }
+
+  const gd = integrations.google_drive;
+
   return (
     <section className="relative bg-(--color-surface) border border-(--color-border) p-[20px] pb-[18px]">
       <CropMark position="tl" />
@@ -36,48 +64,55 @@ export function SourcesPanel({ active, setActive, counts }: SourcesPanelProps) {
 
       <div className="flex flex-col gap-[10px]">
         {/* Google Drive */}
-        <button
-          type="button"
-          className={`grid grid-cols-[32px_minmax(0,1fr)_auto] items-center gap-[12px] p-[12px] border rounded-[4px] cursor-pointer text-left w-full transition-[border-color,background] duration-[0.18s] ${active === "drive" ? activeClass : idleClass}`}
-          onClick={() => setActive(active === "drive" ? "all" : "drive")}
-        >
-          <span className="w-[32px] h-[32px] inline-grid place-items-center rounded-[2px]">
-            <DriveMark size={20} />
-          </span>
-          <span className="min-w-0">
-            <div className="font-ui text-[13.5px] font-medium text-(--color-foreground) leading-[1.15] tracking-[-0.005em]">
-              Google Drive
-            </div>
-            <div className="mt-[2px] font-code text-[9.5px] tracking-[0.14em] uppercase text-(--color-muted) whitespace-nowrap overflow-hidden text-ellipsis">
-              anya@studio.work
-            </div>
-          </span>
-          <span className={`font-code text-[10.5px] tracking-[0.1em] px-[8px] py-[3px] border rounded-full tabular-nums ${countBadge(active === "drive")}`}>
-            {counts.drive}
-          </span>
-        </button>
+        {loading ? (
+          <div className="h-[58px] border border-(--color-border) rounded-[4px] animate-pulse bg-(--color-background)" />
+        ) : gd.connected ? (
+          <button
+            type="button"
+            className={`grid grid-cols-[32px_minmax(0,1fr)_auto] items-center gap-[12px] p-[12px] border rounded-[4px] cursor-pointer text-left w-full transition-[border-color,background] duration-[0.18s] ${active === "drive" ? activeClass : idleClass}`}
+            onClick={() => setActive(active === "drive" ? "all" : "drive")}
+          >
+            <span className="w-[32px] h-[32px] inline-grid place-items-center rounded-[2px]">
+              <DriveMark size={20} />
+            </span>
+            <span className="min-w-0">
+              <div className="font-ui text-[13.5px] font-medium text-(--color-foreground) leading-[1.15] tracking-[-0.005em]">
+                Google Drive
+              </div>
+              <div className="mt-[2px] font-code text-[9.5px] tracking-[0.14em] uppercase text-(--color-muted) whitespace-nowrap overflow-hidden text-ellipsis">
+                {gd.email}
+              </div>
+            </span>
+            <span className={`font-code text-[10.5px] tracking-[0.1em] px-[8px] py-[3px] border rounded-full tabular-nums ${countBadge(active === "drive")}`}>
+              {counts.drive}
+            </span>
+          </button>
+        ) : (
+          <button
+            type="button"
+            onClick={connectGoogle}
+            className="grid grid-cols-[32px_minmax(0,1fr)] items-center gap-[12px] p-[12px] border border-dashed border-(--color-border) rounded-[4px] cursor-pointer text-left w-full hover:border-(--color-primary) transition-[border-color] duration-[0.18s]"
+          >
+            <span className="w-[32px] h-[32px] inline-grid place-items-center rounded-[2px] text-(--color-muted)">
+              <DriveMark size={20} />
+            </span>
+            <span className="min-w-0">
+              <div className="font-ui text-[13.5px] font-medium text-(--color-muted) leading-[1.15]">Connect Drive</div>
+              <div className="mt-[2px] font-code text-[9.5px] tracking-[0.14em] uppercase text-(--color-muted)">click to link account</div>
+            </span>
+          </button>
+        )}
 
-        {/* Dropbox */}
-        <button
-          type="button"
-          className={`grid grid-cols-[32px_minmax(0,1fr)_auto] items-center gap-[12px] p-[12px] border rounded-[4px] cursor-pointer text-left w-full transition-[border-color,background] duration-[0.18s] ${active === "dropbox" ? activeClass : idleClass}`}
-          onClick={() => setActive(active === "dropbox" ? "all" : "dropbox")}
-        >
-          <span className="w-[32px] h-[32px] inline-grid place-items-center rounded-[2px]">
+        {/* Dropbox — Phase 2 */}
+        <div className="grid grid-cols-[32px_minmax(0,1fr)] items-center gap-[12px] p-[12px] border border-dashed border-(--color-border) rounded-[4px] opacity-40 select-none">
+          <span className="w-[32px] h-[32px] inline-grid place-items-center rounded-[2px] text-(--color-muted)">
             <DropMark size={20} />
           </span>
           <span className="min-w-0">
-            <div className="font-ui text-[13.5px] font-medium text-(--color-foreground) leading-[1.15] tracking-[-0.005em]">
-              Dropbox
-            </div>
-            <div className="mt-[2px] font-code text-[9.5px] tracking-[0.14em] uppercase text-(--color-muted) whitespace-nowrap overflow-hidden text-ellipsis">
-              studio-shared
-            </div>
+            <div className="font-ui text-[13.5px] font-medium text-(--color-muted) leading-[1.15]">Dropbox</div>
+            <div className="mt-[2px] font-code text-[9.5px] tracking-[0.14em] uppercase text-(--color-muted)">coming soon</div>
           </span>
-          <span className={`font-code text-[10.5px] tracking-[0.1em] px-[8px] py-[3px] border rounded-full tabular-nums ${countBadge(active === "dropbox")}`}>
-            {counts.dropbox}
-          </span>
-        </button>
+        </div>
       </div>
 
       {/* Storage meter */}
@@ -87,9 +122,7 @@ export function SourcesPanel({ active, setActive, counts }: SourcesPanelProps) {
           <span><span className="text-(--color-foreground) tabular-nums">2.4</span>&nbsp;/&nbsp;15 GB</span>
         </div>
         <div className="h-[4px] bg-(--color-border) rounded-[2px] relative overflow-hidden">
-          {/* Drive fill */}
           <div className="absolute inset-y-0 left-0 w-[9.5%] bg-(--color-primary) rounded-[2px]" />
-          {/* Dropbox fill — hatched */}
           <div
             className="absolute inset-0"
             style={{

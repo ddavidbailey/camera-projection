@@ -14,6 +14,17 @@ export interface Integrations {
   dropbox: IntegrationStatus;
 }
 
+export async function disconnectIntegration(provider: keyof Integrations): Promise<void> {
+  const session = await auth.api.getSession({ headers: await headers() });
+  if (!session) throw new Error("Unauthorized");
+
+  const db = getPool();
+  await db.query(
+    `delete from "user_integrations" where "userId" = $1 and "provider" = $2`,
+    [session.user.id, provider]
+  );
+}
+
 export async function getIntegrationStatus(): Promise<Integrations> {
   const session = await auth.api.getSession({ headers: await headers() });
   if (!session) throw new Error("Unauthorized");
