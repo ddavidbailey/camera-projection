@@ -88,7 +88,16 @@ export function DashboardClient() {
 
           <div className="grid grid-cols-[260px_minmax(0,1fr)_300px] max-[1500px]:grid-cols-[240px_minmax(0,1fr)] max-[880px]:grid-cols-1 gap-[22px] items-start">
             <aside>
-              <SourcesPanel active={source} setActive={setSource} counts={counts} />
+              <SourcesPanel
+                active={source}
+                setActive={setSource}
+                counts={counts}
+                onDisconnect={(provider) => {
+                  if (provider === "google_drive") {
+                    setAllRows((prev) => prev.filter((r) => r.source !== "drive"));
+                  }
+                }}
+              />
             </aside>
 
             <section className="min-w-0">

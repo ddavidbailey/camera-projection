@@ -16,6 +16,7 @@ interface SourcesPanelProps {
   active: SourceFilter;
   setActive: (v: SourceFilter) => void;
   counts: { drive: number; dropbox: number };
+  onDisconnect?: (provider: keyof Integrations) => void;
 }
 
 const activeClass = "border-(--color-primary) bg-[color-mix(in_oklab,var(--color-primary),transparent_92%)]";
@@ -27,7 +28,7 @@ function countBadge(active: boolean) {
     : "border-(--color-border) text-(--color-foreground) bg-(--color-surface)";
 }
 
-export function SourcesPanel({ active, setActive, counts }: SourcesPanelProps) {
+export function SourcesPanel({ active, setActive, counts, onDisconnect }: SourcesPanelProps) {
   const [integrations, setIntegrations] = useState<Integrations>(DEFAULT);
   const [loading, setLoading] = useState(true);
 
@@ -44,6 +45,7 @@ export function SourcesPanel({ active, setActive, counts }: SourcesPanelProps) {
   async function handleDisconnectGoogle() {
     await disconnectIntegration("google_drive");
     setIntegrations((prev) => ({ ...prev, google_drive: { connected: false, email: "" } }));
+    onDisconnect?.("google_drive");
   }
 
   const gd = integrations.google_drive;
@@ -67,26 +69,35 @@ export function SourcesPanel({ active, setActive, counts }: SourcesPanelProps) {
         {loading ? (
           <div className="h-[58px] border border-(--color-border) rounded-[4px] animate-pulse bg-(--color-background)" />
         ) : gd.connected ? (
-          <button
-            type="button"
-            className={`grid grid-cols-[32px_minmax(0,1fr)_auto] items-center gap-[12px] p-[12px] border rounded-[4px] cursor-pointer text-left w-full transition-[border-color,background] duration-[0.18s] ${active === "drive" ? activeClass : idleClass}`}
-            onClick={() => setActive(active === "drive" ? "all" : "drive")}
-          >
-            <span className="w-[32px] h-[32px] inline-grid place-items-center rounded-[2px]">
-              <DriveMark size={20} />
-            </span>
-            <span className="min-w-0">
-              <div className="font-ui text-[13.5px] font-medium text-(--color-foreground) leading-[1.15] tracking-[-0.005em]">
-                Google Drive
-              </div>
-              <div className="mt-[2px] font-code text-[9.5px] tracking-[0.14em] uppercase text-(--color-muted) whitespace-nowrap overflow-hidden text-ellipsis">
-                {gd.email}
-              </div>
-            </span>
-            <span className={`font-code text-[10.5px] tracking-[0.1em] px-[8px] py-[3px] border rounded-full tabular-nums ${countBadge(active === "drive")}`}>
-              {counts.drive}
-            </span>
-          </button>
+          <div className={`grid grid-cols-[32px_minmax(0,1fr)_auto] items-center gap-[12px] p-[12px] border rounded-[4px] transition-[border-color,background] duration-[0.18s] ${active === "drive" ? activeClass : idleClass}`}>
+            <button
+              type="button"
+              className="col-span-3 grid grid-cols-[32px_minmax(0,1fr)_auto] items-center gap-[12px] cursor-pointer text-left w-full bg-transparent border-0 p-0"
+              onClick={() => setActive(active === "drive" ? "all" : "drive")}
+            >
+              <span className="w-[32px] h-[32px] inline-grid place-items-center rounded-[2px]">
+                <DriveMark size={20} />
+              </span>
+              <span className="min-w-0">
+                <div className="font-ui text-[13.5px] font-medium text-(--color-foreground) leading-[1.15] tracking-[-0.005em]">
+                  Google Drive
+                </div>
+                <div className="mt-[2px] font-code text-[9.5px] tracking-[0.14em] uppercase text-(--color-muted) whitespace-nowrap overflow-hidden text-ellipsis">
+                  {gd.email}
+                </div>
+              </span>
+              <span className={`font-code text-[10.5px] tracking-[0.1em] px-[8px] py-[3px] border rounded-full tabular-nums ${countBadge(active === "drive")}`}>
+                {counts.drive}
+              </span>
+            </button>
+            <button
+              type="button"
+              onClick={handleDisconnectGoogle}
+              className="col-span-3 mt-[6px] pt-[8px] border-t border-dashed border-(--color-border) font-code text-[9.5px] tracking-[0.14em] uppercase text-(--color-muted) hover:text-(--color-foreground) transition-colors cursor-pointer bg-transparent border-x-0 border-b-0 text-left w-full p-0"
+            >
+              disconnect
+            </button>
+          </div>
         ) : (
           <button
             type="button"
