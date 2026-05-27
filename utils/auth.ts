@@ -16,16 +16,15 @@ export const auth = betterAuth({
     enabled: true,
     rememberMeEnabled: true,
   },
-  socialProviders: {
-    dropbox: {
-      clientId: process.env.DROPBOX_CLIENT_ID as string,
-      clientSecret: process.env.DROPBOX_CLIENT_SECRET as string,
-      scopes: [
-        "account_info.read",
-        "files.metadata.read",
-        "files.content.read",
-      ],
+  account: {
+    accountLinking: {
+      enabled: true,
+      trustedProviders: ["google", "dropbox", "email-password"],
+      allowDifferentEmails: false,
+      allowUnlinkingAll: false,
     },
+  },
+  socialProviders: {
     google: {
       clientId: process.env.GOOGLE_CLIENT_ID as string,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET as string,
