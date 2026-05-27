@@ -9,6 +9,7 @@ import { FilterBar }       from "@/components/dashboard/FilterBar";
 import { WorksheetsTable } from "@/components/dashboard/WorksheetsTable";
 import { LIVE_IDS, type SourceFilter, type Worksheet, type ThumbVariant } from "@/components/dashboard/data";
 import type { DriveFile } from "@/lib/google-drive";
+import type { DropboxFile } from "@/lib/dropbox";
 
 function mimeToThumb(mime: string): ThumbVariant {
   if (mime.includes("image")) return "figure";
@@ -43,12 +44,32 @@ export function DashboardClient() {
   const [allRows, setAllRows] = useState<Worksheet[]>([]);
 
   useEffect(() => {
-    fetch("/api/googledrive/files")
-      .then((r) => r.ok ? r.json() : Promise.reject())
-      .then(({ files }: { files: DriveFile[] }) => {
-        setAllRows(files.map(driveFileToWorksheet));
-      })
-      .catch(() => {});
+    async function load() {
+      const [driveRes, dropboxRes] = await Promise.allSettled([
+        fetch("/api/googledrive/files").then((r) => r.ok ? r.json() : Promise.reject()),
+        fetch("/api/dropbox/files").then((r) => r.ok ? r.json() : Promise.reject()),
+      ]);
+
+      const driveFiles: Worksheet[] = driveRes.status === "fulfilled"
+        ? (driveRes.value.files as DriveFile[]).map(driveFileToWorksheet)
+        : [];
+
+      const dropboxFiles: Worksheet[] = dropboxRes.status === "fulfilled"
+        ? (dropboxRes.value.files as DropboxFile[]).map((f) => ({
+            id:       f.id,
+            name:     f.name,
+            path:     f.pathDisplay,
+            pages:    1,
+            source:   "dropbox" as const,
+            modified: relativeTime(f.serverModified),
+            thumb:    "lines" as const,
+          }))
+        : [];
+
+      setAllRows([...driveFiles, ...dropboxFiles]);
+    }
+
+    load();
   }, []);
 
   const counts = useMemo(() => ({
@@ -93,9 +114,8 @@ export function DashboardClient() {
                 setActive={setSource}
                 counts={counts}
                 onDisconnect={(provider) => {
-                  if (provider === "google_drive") {
-                    setAllRows((prev) => prev.filter((r) => r.source !== "drive"));
-                  }
+                  if (provider === "google_drive") setAllRows((prev) => prev.filter((r) => r.source !== "drive"));
+                  if (provider === "dropbox")      setAllRows((prev) => prev.filter((r) => r.source !== "dropbox"));
                 }}
               />
             </aside>

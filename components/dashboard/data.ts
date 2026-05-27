@@ -37,10 +37,6 @@ export const SEED: Worksheet[] = [
   { id: "w-08", name: "Handwriting — italic ductus.pdf",      path: "/Type-workshop/Module-1/",   pages: 5,  source: "dropbox", modified: "4d ago",  thumb: "lines" },
 ];
 
-export const LIVE_IDS = new Set(["w-01", "w-05", "w-07"]);
+export const LIVE_IDS = new Set<string>();
 
-export const SESSIONS: Session[] = [
-  { code: "4F8A2C9D", wsId: "w-01", expIn: "1h 42m", soon: false, viewers: 14 },
-  { code: "9C12BB0E", wsId: "w-05", expIn: "26m",    soon: true,  viewers: 22 },
-  { code: "A4011D7F", wsId: "w-07", expIn: "3h 10m", soon: false, viewers: 8 },
-];
+export const SESSIONS: Session[] = [];

@@ -42,6 +42,16 @@ export function SourcesPanel({ active, setActive, counts, onDisconnect }: Source
     await authClient.linkSocial({ provider: "google", callbackURL: "/dashboard" });
   }
 
+  async function connectDropbox() {
+    await authClient.linkSocial({ provider: "dropbox", callbackURL: "/dashboard" });
+  }
+
+  async function handleDisconnectDropbox() {
+    await disconnectIntegration("dropbox");
+    setIntegrations((prev) => ({ ...prev, dropbox: { connected: false, email: "" } }));
+    onDisconnect?.("dropbox");
+  }
+
   async function handleDisconnectGoogle() {
     await disconnectIntegration("google_drive");
     setIntegrations((prev) => ({ ...prev, google_drive: { connected: false, email: "" } }));
@@ -114,16 +124,54 @@ export function SourcesPanel({ active, setActive, counts, onDisconnect }: Source
           </button>
         )}
 
-        {/* Dropbox — Phase 2 */}
-        <div className="grid grid-cols-[32px_minmax(0,1fr)] items-center gap-[12px] p-[12px] border border-dashed border-(--color-border) rounded-[4px] opacity-40 select-none">
-          <span className="w-[32px] h-[32px] inline-grid place-items-center rounded-[2px] text-(--color-muted)">
-            <DropMark size={20} />
-          </span>
-          <span className="min-w-0">
-            <div className="font-ui text-[13.5px] font-medium text-(--color-muted) leading-[1.15]">Dropbox</div>
-            <div className="mt-[2px] font-code text-[9.5px] tracking-[0.14em] uppercase text-(--color-muted)">coming soon</div>
-          </span>
-        </div>
+        {/* Dropbox */}
+        {loading ? (
+          <div className="h-[58px] border border-(--color-border) rounded-[4px] animate-pulse bg-(--color-background)" />
+        ) : integrations.dropbox.connected ? (
+          <div className={`grid grid-cols-[32px_minmax(0,1fr)_auto] items-center gap-[12px] p-[12px] border rounded-[4px] transition-[border-color,background] duration-[0.18s] ${active === "dropbox" ? activeClass : idleClass}`}>
+            <button
+              type="button"
+              className="col-span-3 grid grid-cols-[32px_minmax(0,1fr)_auto] items-center gap-[12px] cursor-pointer text-left w-full bg-transparent border-0 p-0"
+              onClick={() => setActive(active === "dropbox" ? "all" : "dropbox")}
+            >
+              <span className="w-[32px] h-[32px] inline-grid place-items-center rounded-[2px]">
+                <DropMark size={20} />
+              </span>
+              <span className="min-w-0">
+                <div className="font-ui text-[13.5px] font-medium text-(--color-foreground) leading-[1.15] tracking-[-0.005em]">
+                  Dropbox
+                </div>
+                <div className="mt-[2px] font-code text-[9.5px] tracking-[0.14em] uppercase text-(--color-muted) whitespace-nowrap overflow-hidden text-ellipsis">
+                  {integrations.dropbox.email}
+                </div>
+              </span>
+              <span className={`font-code text-[10.5px] tracking-[0.1em] px-[8px] py-[3px] border rounded-full tabular-nums ${countBadge(active === "dropbox")}`}>
+                {counts.dropbox}
+              </span>
+            </button>
+            <button
+              type="button"
+              onClick={handleDisconnectDropbox}
+              className="col-span-3 mt-[6px] pt-[8px] border-t border-dashed border-(--color-border) font-code text-[9.5px] tracking-[0.14em] uppercase text-(--color-muted) hover:text-(--color-foreground) transition-colors cursor-pointer bg-transparent border-x-0 border-b-0 text-left w-full p-0"
+            >
+              disconnect
+            </button>
+          </div>
+        ) : (
+          <button
+            type="button"
+            onClick={connectDropbox}
+            className="grid grid-cols-[32px_minmax(0,1fr)] items-center gap-[12px] p-[12px] border border-dashed border-(--color-border) rounded-[4px] cursor-pointer text-left w-full hover:border-(--color-primary) transition-[border-color] duration-[0.18s]"
+          >
+            <span className="w-[32px] h-[32px] inline-grid place-items-center rounded-[2px] text-(--color-muted)">
+              <DropMark size={20} />
+            </span>
+            <span className="min-w-0">
+              <div className="font-ui text-[13.5px] font-medium text-(--color-muted) leading-[1.15]">Connect Dropbox</div>
+              <div className="mt-[2px] font-code text-[9.5px] tracking-[0.14em] uppercase text-(--color-muted)">click to link account</div>
+            </span>
+          </button>
+        )}
       </div>
 
       {/* Storage meter */}
