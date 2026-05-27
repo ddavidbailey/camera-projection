@@ -23,6 +23,7 @@ export const auth = betterAuth({
       allowDifferentEmails: false,
       allowUnlinkingAll: false,
     },
+    encryptOAuthTokens: true,
   },
   socialProviders: {
     google: {
