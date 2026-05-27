@@ -26,6 +26,11 @@ export const auth = betterAuth({
     encryptOAuthTokens: true,
   },
   socialProviders: {
+    dropbox: {
+      clientId:     process.env.DROPBOX_CLIENT_ID     as string,
+      clientSecret: process.env.DROPBOX_CLIENT_SECRET as string,
+      scope: ["account_info.read", "files.metadata.read", "files.content.read"],
+    },
     google: {
       clientId: process.env.GOOGLE_CLIENT_ID as string,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET as string,
