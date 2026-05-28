@@ -53,15 +53,6 @@ export function FilterBar({ source, setSource, counts, sort, setSort, selectedCo
 
       <span className="flex-1" />
 
-      <button
-        type="button"
-        className="inline-flex items-center gap-[8px] px-[12px] py-[6px] border border-(--color-border) rounded-full font-code text-[10.5px] tracking-[0.12em] uppercase text-(--color-muted) cursor-pointer hover:text-(--color-foreground) hover:border-[color-mix(in_oklab,var(--color-primary),transparent_50%)] transition-[color,border-color] duration-[0.18s]"
-        style={{ background: "color-mix(in oklab, var(--color-surface), transparent 25%)" }}
-      >
-        Sort: <strong className="text-(--color-foreground) ml-1">{sort}</strong>
-        <span className="opacity-50">▾</span>
-      </button>
-
       {selectedCount > 0 && (
         <button
           type="button"
@@ -72,6 +63,15 @@ export function FilterBar({ source, setSource, counts, sort, setSort, selectedCo
           <span className="opacity-70 tabular-nums text-[10px]">{selectedCount}</span>
         </button>
       )}
+
+      <button
+        type="button"
+        className="inline-flex items-center gap-[8px] px-[12px] py-[6px] border border-(--color-border) rounded-full font-code text-[10.5px] tracking-[0.12em] uppercase text-(--color-muted) cursor-pointer hover:text-(--color-foreground) hover:border-[color-mix(in_oklab,var(--color-primary),transparent_50%)] transition-[color,border-color] duration-[0.18s]"
+        style={{ background: "color-mix(in oklab, var(--color-surface), transparent 25%)" }}
+      >
+        Sort: <strong className="text-(--color-foreground) ml-1">{sort}</strong>
+        <span className="opacity-50">▾</span>
+      </button>
     </div>
   );
 }

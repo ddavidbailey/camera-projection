@@ -81,13 +81,25 @@ export function WorksheetsTable({
               >
                 {/* Checkbox */}
                 <div className="w-[18px] flex-shrink-0 flex items-center justify-center">
-                  <input
-                    type="checkbox"
-                    checked={selected.has(r.id)}
-                    onChange={() => onToggle(r.id)}
-                    aria-label={`Select ${r.name}`}
-                    className="w-[14px] h-[14px] flex-shrink-0 accent-[var(--color-primary)] cursor-pointer"
-                  />
+                  <label className="relative w-[14px] h-[14px] block flex-shrink-0 cursor-pointer group">
+                    <input
+                      type="checkbox"
+                      checked={selected.has(r.id)}
+                      onChange={() => onToggle(r.id)}
+                      aria-label={`Select ${r.name}`}
+                      className="sr-only peer"
+                    />
+                    {/* Box */}
+                    <span className="absolute inset-0 rounded-[3px] border transition-[background,border-color,box-shadow] duration-[0.15s] border-(--color-border) bg-(--color-background) group-hover:border-(--color-primary) peer-checked:bg-(--color-primary) peer-checked:border-(--color-primary) peer-focus-visible:[box-shadow:0_0_0_2px_color-mix(in_oklab,var(--color-primary),transparent_60%)]" />
+                    {/* Tick */}
+                    <svg
+                      className="absolute inset-0 w-full h-full pointer-events-none opacity-0 peer-checked:opacity-100 transition-opacity duration-[0.15s]"
+                      viewBox="0 0 14 14"
+                      fill="none"
+                    >
+                      <path d="M3 7.2l2.8 2.8 5.2-5.2" stroke="var(--color-surface)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                    </svg>
+                  </label>
                 </div>
 
                 {/* Thumbnail */}
@@ -129,10 +141,7 @@ export function WorksheetsTable({
                 {/* Actions */}
                 <div className="dash-col-actions flex-shrink-0 ml-auto inline-flex items-center gap-[6px]">
                   <button type="button" className={actBase}>Open</button>
-                  <button type="button" className={actPrimary}>
-                    Share <span>→</span>
-                  </button>
-                  <button type="button" className={actIcon} aria-label="More">
+<button type="button" className={actIcon} aria-label="More">
                     <svg width="14" height="14" viewBox="0 0 14 14" fill="currentColor">
                       <circle cx="3" cy="7" r="1.2" />
                       <circle cx="7" cy="7" r="1.2" />
