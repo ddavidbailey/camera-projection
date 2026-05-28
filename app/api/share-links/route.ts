@@ -7,6 +7,8 @@ import { getPool } from "@/database/db";
 const VALID_EXPIRY_HOURS = [1, 4, 8, 24] as const;
 type ExpiryHours = (typeof VALID_EXPIRY_HOURS)[number];
 
+const VALID_PROVIDERS = ["google_drive", "dropbox"] as const;
+
 interface FileInput {
   fileId: string;
   provider: string;
@@ -44,6 +46,12 @@ export async function POST(request: NextRequest) {
     ) {
       return NextResponse.json(
         { error: "Each file must have fileId, provider, fileName, filePath, mimeType as strings" },
+        { status: 400 }
+      );
+    }
+    if (!VALID_PROVIDERS.includes((f as { provider: string }).provider as typeof VALID_PROVIDERS[number])) {
+      return NextResponse.json(
+        { error: `Invalid provider "${(f as { provider: string }).provider}". Must be google_drive or dropbox.` },
         { status: 400 }
       );
     }
