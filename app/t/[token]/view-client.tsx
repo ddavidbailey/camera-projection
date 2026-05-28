@@ -5,15 +5,15 @@ import Link from "next/link";
 import { Logomark } from "@/components/tempLink/Logomark";
 import { CameraView } from "@/components/tempLink/CameraView";
 import { ControlsPanel } from "@/components/tempLink/ControlsPanel";
-import { WorksheetPanel } from "@/components/tempLink/WorksheetPanel";
+import { WorksheetPanel, type ShareLinkFile } from "@/components/tempLink/WorksheetPanel";
 import type { CameraState } from "@/components/tempLink/CameraView";
 
-const WORKSHEETS = [
-  { id: "ws-03", file: "worksheet-03.pdf", pages: 4 },
-  { id: "ws-04", file: "letterforms-A.pdf", pages: 3 },
-] as const;
+interface ViewClientProps {
+  token: string;
+  files: ShareLinkFile[];
+}
 
-export function ViewClient() {
+export function ViewClient({ token, files }: ViewClientProps) {
   const [cameraState, setCameraState] = useState<CameraState>("idle");
   const [zoom, setZoom] = useState(1);
   const [brightness, setBrightness] = useState(1);
@@ -59,7 +59,11 @@ export function ViewClient() {
   // Paper detection is simulated — real detection will wire in OpenCV.js
   const paperDetected = false;
 
-  const worksheet = WORKSHEETS[0];
+  const clampedPageIndex = Math.min(pageIndex, Math.max(0, files.length - 1));
+
+  const proxyUrl = files[clampedPageIndex]
+    ? `/api/t/${token}/file/${files[clampedPageIndex].fileId}`
+    : null;
 
   const requestCamera = useCallback(async () => {
     try {
@@ -77,7 +81,7 @@ export function ViewClient() {
   return (
     <div
       className="relative z-1 flex flex-col min-h-dvh font-ui antialiased [text-rendering:optimizeLegibility] overflow-x-hidden text-(--color-foreground) bg-(--color-background) min-[880px]:h-dvh min-[880px]:overflow-hidden"
-      data-palette="paper"
+
     >
       {/* Subtle radial background gradient */}
       <div
@@ -127,17 +131,18 @@ export function ViewClient() {
               brightness={brightness}
               overlayOpacity={overlayOpacity}
               paperDetected={paperDetected}
-              pageIndex={pageIndex}
+              pageIndex={clampedPageIndex}
               cameraState={cameraState}
               onRequest={requestCamera}
               torch={torch}
               flipped={flipped}
+              fileUrl={proxyUrl}
             />
 
             <aside className="flex flex-col gap-[14px] min-[880px]:min-h-0 min-[880px]:h-full min-[880px]:overflow-hidden">
               <WorksheetPanel
-                worksheet={worksheet}
-                pageIndex={pageIndex}
+                files={files}
+                pageIndex={clampedPageIndex}
                 setPageIndex={setPageIndex}
               />
               <ControlsPanel

@@ -3,12 +3,15 @@ import { GrainOverlay } from "@/components/auth/icons";
 import { AuthAside } from "@/components/auth/AuthAside";
 import { AuthFormArea } from "@/components/auth/AuthFormArea";
 
-export default function Page() {
+export default async function Page({ searchParams }: { searchParams: Promise<{ mode?: string }> }) {
+  const { mode } = await searchParams;
+  const initialMode = mode === "up" ? "up" : "in";
+
   return (
-    <AuthProvider>
+    <AuthProvider initialMode={initialMode}>
       <div
         className="font-ui text-(--color-foreground) bg-(--color-background) min-h-screen relative antialiased [text-rendering:optimizeLegibility]"
-        data-palette="paper"
+
       >
         <GrainOverlay />
 

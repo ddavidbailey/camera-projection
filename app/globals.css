@@ -3,6 +3,7 @@
 /* ── Tracelight design tokens ────────────────────────────────────────────── */
 /* Paper palette — light mode default */
 :root {
+  --home-beam: oklch(0.78 0.05 218);
   --color-background: #efe7d6;
   --color-surface: #f8f2e4;
   --color-foreground: #1b1a17;
@@ -11,18 +12,23 @@
   --color-primary: oklch(0.66 0.13 52);
   --color-secondary: oklch(0.86 0.07 218);
   --color-mark: #c7b891;
+  --shadow-card: 0 1px 0 color-mix(in oklab, var(--color-surface), white 6%) inset, 0 30px 60px -40px rgba(0,0,0,0.25), 0 4px 14px -8px rgba(0,0,0,0.12);
 }
 
-/* Dusk palette — activated via data-palette="dusk" on a container */
-[data-palette="dusk"] {
-  --color-background: #1a1b24;
-  --color-surface: #22232e;
-  --color-foreground: #ede7d6;
-  --color-muted: #8e8a7d;
-  --color-border: #33343f;
-  --color-primary: oklch(0.72 0.13 28);
-  --color-secondary: oklch(0.78 0.09 84);
-  --color-mark: #4a4b58;
+/* Dusk palette — system dark mode */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --home-beam: oklch(0.78 0.09 84);
+    --color-background: #1a1b24;
+    --color-surface: #22232e;
+    --color-foreground: #ede7d6;
+    --color-muted: #8e8a7d;
+    --color-border: #33343f;
+    --color-primary: oklch(0.72 0.13 28);
+    --color-secondary: oklch(0.78 0.09 84);
+    --color-mark: #4a4b58;
+    --shadow-card: 0 1px 0 color-mix(in oklab, var(--color-surface), white 4%) inset, 0 30px 60px -30px rgba(0,0,0,0.5);
+  }
 }
 
 @theme inline {
@@ -49,7 +55,32 @@
 body {
   background: var(--color-background);
   color: var(--color-foreground);
-  font-family: Arial, Helvetica, sans-serif;
+}
+
+/* ── Dashboard semantic colors ──────────────────────────────────────────── */
+:root {
+  --color-success: oklch(0.62 0.11 158);
+  --color-warning: oklch(0.7 0.13 70);
+}
+
+/* ── Dashboard table rows — flex layout ──────────────────────────────────── */
+.dash-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 22px;
+}
+@media (max-width: 1100px) {
+  .dash-row { gap: 10px; padding: 12px 14px; }
+  .dash-col-source { display: none; }
+}
+@media (max-width: 880px) {
+  .dash-col-modified { display: none; }
+}
+@media (max-width: 640px) {
+  .dash-thead { display: none !important; }
+  .dash-col-sessions { display: none; }
+  .dash-col-actions { margin-left: 0; }
 }
 
 /* ── Participant view — range slider (pseudo-elements can't use Tailwind) ─── */
