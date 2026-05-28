@@ -14,7 +14,6 @@ export interface ShareLinkFile {
 }
 
 export interface WorksheetPanelProps {
-  token: string;
   files: ShareLinkFile[];
   pageIndex: number;
   setPageIndex: (i: number) => void;
@@ -23,7 +22,7 @@ export interface WorksheetPanelProps {
 const pagerBtn =
   "bg-transparent border border-(--color-border) w-[26px] h-[26px] rounded-[2px] inline-grid place-items-center cursor-pointer text-(--color-foreground) transition-[border-color,color] duration-[0.18s] hover:border-(--color-primary) hover:text-(--color-primary) disabled:opacity-35 disabled:cursor-default";
 
-export function WorksheetPanel({ files, pageIndex, setPageIndex, token: _token }: WorksheetPanelProps) {
+export function WorksheetPanel({ files, pageIndex, setPageIndex }: WorksheetPanelProps) {
   if (files.length === 0) {
     return (
       <section className="relative bg-(--color-surface) border border-(--color-border) p-[18px] pb-[16px]" aria-label="Worksheet">

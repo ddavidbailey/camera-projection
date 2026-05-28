@@ -5,18 +5,8 @@ import Link from "next/link";
 import { Logomark } from "@/components/tempLink/Logomark";
 import { CameraView } from "@/components/tempLink/CameraView";
 import { ControlsPanel } from "@/components/tempLink/ControlsPanel";
-import { WorksheetPanel } from "@/components/tempLink/WorksheetPanel";
+import { WorksheetPanel, type ShareLinkFile } from "@/components/tempLink/WorksheetPanel";
 import type { CameraState } from "@/components/tempLink/CameraView";
-
-interface ShareLinkFile {
-  id: string;
-  fileId: string;
-  provider: string;
-  fileName: string;
-  filePath: string;
-  mimeType: string;
-  sortOrder: number;
-}
 
 interface ViewClientProps {
   token: string;
@@ -151,7 +141,6 @@ export function ViewClient({ token, files }: ViewClientProps) {
 
             <aside className="flex flex-col gap-[14px] min-[880px]:min-h-0 min-[880px]:overflow-y-auto">
               <WorksheetPanel
-                token={token}
                 files={files}
                 pageIndex={clampedPageIndex}
                 setPageIndex={setPageIndex}
