@@ -87,3 +87,41 @@ export async function listDropboxFiles(userId: string): Promise<DropboxFile[]> {
       serverModified: e.server_modified,
     }));
 }
+
+export async function downloadDropboxFile(
+  userId: string,
+  fileId: string
+): Promise<{ stream: ReadableStream; contentType: string }> {
+  const db = getPool();
+  const { rows } = await db.query(
+    `select "accessToken", "refreshToken", "tokenExpiresAt"
+     from "user_integrations"
+     where "userId" = $1 and "provider" = 'dropbox'`,
+    [userId]
+  );
+
+  if (rows.length === 0) throw new Error("dropbox integration not found");
+
+  const row = rows[0];
+  const expired = row.tokenExpiresAt && new Date(row.tokenExpiresAt) < new Date();
+
+  let accessToken = decrypt(row.accessToken);
+  if (expired && row.refreshToken) {
+    accessToken = await refreshDropboxToken(userId, decrypt(row.refreshToken));
+  }
+
+  const res = await fetch("https://content.dropboxapi.com/2/files/download", {
+    method: "POST",
+    headers: {
+      Authorization:      `Bearer ${accessToken}`,
+      "Dropbox-API-Arg":  JSON.stringify({ path: `id:${fileId}` }),
+    },
+  });
+
+  if (!res.ok) throw new Error(`Dropbox download failed: ${res.status}`);
+  if (!res.body) throw new Error("Dropbox download returned empty body");
+
+  const contentType = res.headers.get("Content-Type") ?? "application/octet-stream";
+
+  return { stream: res.body, contentType };
+}
