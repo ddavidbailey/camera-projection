@@ -46,6 +46,7 @@ export function DashboardClient() {
   const [allRows,    setAllRows]    = useState<Worksheet[]>([]);
   const [selected,   setSelected]   = useState<Set<string>>(new Set());
   const [modalOpen,  setModalOpen]  = useState(false);
+  const [sessionsKey, setSessionsKey] = useState(0);
 
   useEffect(() => {
     async function load() {
@@ -151,7 +152,7 @@ export function DashboardClient() {
             </section>
 
             <aside className="max-[1500px]:col-span-full">
-              <SessionsPanel worksheets={allRows} />
+              <SessionsPanel worksheets={allRows} refreshKey={sessionsKey} />
             </aside>
           </div>
         </div>
@@ -174,6 +175,7 @@ export function DashboardClient() {
         onClose={() => {
           setModalOpen(false);
           setSelected(new Set());
+          setSessionsKey((k) => k + 1);
         }}
       />
     </div>
