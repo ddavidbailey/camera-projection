@@ -12,8 +12,8 @@ export async function DELETE(
 
   const { id } = await params;
 
-  if (!id || typeof id !== "string") {
-    return NextResponse.json({ error: "Missing share link id" }, { status: 400 });
+  if (!/^[0-9a-f-]{36}$/i.test(id)) {
+    return NextResponse.json({ error: "Invalid id" }, { status: 400 });
   }
 
   const db = getPool();
@@ -25,7 +25,7 @@ export async function DELETE(
       [id, session.user.id],
     );
 
-    if (result.rowCount === 0) {
+    if ((result.rowCount ?? 0) === 0) {
       return NextResponse.json({ error: "Not found" }, { status: 404 });
     }
 
