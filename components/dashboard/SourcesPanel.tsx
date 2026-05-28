@@ -15,20 +15,13 @@ const DEFAULT: Integrations = {
 interface SourcesPanelProps {
   active: SourceFilter;
   setActive: (v: SourceFilter) => void;
-  counts: { drive: number; dropbox: number };
   onDisconnect?: (provider: keyof Integrations) => void;
 }
 
 const activeClass = "border-(--color-primary) bg-[color-mix(in_oklab,var(--color-primary),transparent_92%)]";
 const idleClass   = "border-(--color-border) bg-[color-mix(in_oklab,var(--color-background),white_1%)] hover:border-[color-mix(in_oklab,var(--color-primary),transparent_50%)]";
 
-function countBadge(active: boolean) {
-  return active
-    ? "border-(--color-primary) text-(--color-primary) bg-(--color-surface)"
-    : "border-(--color-border) text-(--color-foreground) bg-(--color-surface)";
-}
-
-export function SourcesPanel({ active, setActive, counts, onDisconnect }: SourcesPanelProps) {
+export function SourcesPanel({ active, setActive, onDisconnect }: SourcesPanelProps) {
   const [integrations, setIntegrations] = useState<Integrations>(DEFAULT);
   const [loading, setLoading] = useState(true);
 
@@ -79,34 +72,36 @@ export function SourcesPanel({ active, setActive, counts, onDisconnect }: Source
         {loading ? (
           <div className="h-[58px] border border-(--color-border) rounded-[4px] animate-pulse bg-(--color-background)" />
         ) : gd.connected ? (
-          <div className={`grid grid-cols-[32px_minmax(0,1fr)_auto] items-center gap-[12px] p-[12px] border rounded-[4px] transition-[border-color,background] duration-[0.18s] ${active === "drive" ? activeClass : idleClass}`}>
+          <div className={`p-[12px] border rounded-[4px] transition-[border-color,background] duration-[0.18s] ${active === "drive" ? activeClass : idleClass}`}>
             <button
               type="button"
-              className="col-span-3 grid grid-cols-[32px_minmax(0,1fr)_auto] items-center gap-[12px] cursor-pointer text-left w-full bg-transparent border-0 p-0"
+              className="flex items-center gap-[12px] cursor-pointer text-left w-full bg-transparent border-0 p-0"
               onClick={() => setActive(active === "drive" ? "all" : "drive")}
             >
-              <span className="w-[32px] h-[32px] inline-grid place-items-center rounded-[2px]">
+              <span className="w-[32px] h-[32px] inline-grid place-items-center rounded-[2px] flex-shrink-0">
                 <DriveMark size={20} />
               </span>
-              <span className="min-w-0">
+              <div>
                 <div className="font-ui text-[13.5px] font-medium text-(--color-foreground) leading-[1.15] tracking-[-0.005em]">
                   Google Drive
                 </div>
-                <div className="mt-[2px] font-code text-[9.5px] tracking-[0.14em] uppercase text-(--color-muted) whitespace-nowrap overflow-hidden text-ellipsis">
-                  {gd.email}
+                <div className="mt-[2px] font-code text-[9.5px] tracking-[0.14em] uppercase text-(--color-muted)">
+                  {gd.email.length > 12 ? `${gd.email.slice(0, 12)}…` : gd.email}
                 </div>
-              </span>
-              <span className={`font-code text-[10.5px] tracking-[0.1em] px-[8px] py-[3px] border rounded-full tabular-nums ${countBadge(active === "drive")}`}>
-                {counts.drive}
-              </span>
+              </div>
             </button>
-            <button
-              type="button"
-              onClick={handleDisconnectGoogle}
-              className="col-span-3 mt-[6px] pt-[8px] border-t border-dashed border-(--color-border) font-code text-[9.5px] tracking-[0.14em] uppercase text-(--color-muted) hover:text-(--color-foreground) transition-colors cursor-pointer bg-transparent border-x-0 border-b-0 text-left w-full p-0"
-            >
-              disconnect
-            </button>
+            <div className="mt-[8px] pt-[8px] border-t border-dashed border-(--color-border) flex items-center justify-between">
+              <button
+                type="button"
+                onClick={handleDisconnectGoogle}
+                className="font-code text-[9.5px] tracking-[0.14em] uppercase text-(--color-muted) hover:text-(--color-foreground) transition-colors cursor-pointer bg-transparent border-0 p-0"
+              >
+                disconnect
+              </button>
+              <span className="font-code text-[9.5px] tracking-[0.14em] uppercase text-(--color-primary)">
+                Connected
+              </span>
+            </div>
           </div>
         ) : (
           <button
@@ -128,34 +123,36 @@ export function SourcesPanel({ active, setActive, counts, onDisconnect }: Source
         {loading ? (
           <div className="h-[58px] border border-(--color-border) rounded-[4px] animate-pulse bg-(--color-background)" />
         ) : integrations.dropbox.connected ? (
-          <div className={`grid grid-cols-[32px_minmax(0,1fr)_auto] items-center gap-[12px] p-[12px] border rounded-[4px] transition-[border-color,background] duration-[0.18s] ${active === "dropbox" ? activeClass : idleClass}`}>
+          <div className={`p-[12px] border rounded-[4px] transition-[border-color,background] duration-[0.18s] ${active === "dropbox" ? activeClass : idleClass}`}>
             <button
               type="button"
-              className="col-span-3 grid grid-cols-[32px_minmax(0,1fr)_auto] items-center gap-[12px] cursor-pointer text-left w-full bg-transparent border-0 p-0"
+              className="flex items-center gap-[12px] cursor-pointer text-left w-full bg-transparent border-0 p-0"
               onClick={() => setActive(active === "dropbox" ? "all" : "dropbox")}
             >
-              <span className="w-[32px] h-[32px] inline-grid place-items-center rounded-[2px]">
+              <span className="w-[32px] h-[32px] inline-grid place-items-center rounded-[2px] flex-shrink-0">
                 <DropMark size={20} />
               </span>
-              <span className="min-w-0">
+              <div>
                 <div className="font-ui text-[13.5px] font-medium text-(--color-foreground) leading-[1.15] tracking-[-0.005em]">
                   Dropbox
                 </div>
-                <div className="mt-[2px] font-code text-[9.5px] tracking-[0.14em] uppercase text-(--color-muted) whitespace-nowrap overflow-hidden text-ellipsis">
-                  {integrations.dropbox.email}
+                <div className="mt-[2px] font-code text-[9.5px] tracking-[0.14em] uppercase text-(--color-muted)">
+                  {integrations.dropbox.email.length > 12 ? `${integrations.dropbox.email.slice(0, 12)}…` : integrations.dropbox.email}
                 </div>
-              </span>
-              <span className={`font-code text-[10.5px] tracking-[0.1em] px-[8px] py-[3px] border rounded-full tabular-nums ${countBadge(active === "dropbox")}`}>
-                {counts.dropbox}
-              </span>
+              </div>
             </button>
-            <button
-              type="button"
-              onClick={handleDisconnectDropbox}
-              className="col-span-3 mt-[6px] pt-[8px] border-t border-dashed border-(--color-border) font-code text-[9.5px] tracking-[0.14em] uppercase text-(--color-muted) hover:text-(--color-foreground) transition-colors cursor-pointer bg-transparent border-x-0 border-b-0 text-left w-full p-0"
-            >
-              disconnect
-            </button>
+            <div className="mt-[8px] pt-[8px] border-t border-dashed border-(--color-border) flex items-center justify-between">
+              <button
+                type="button"
+                onClick={handleDisconnectDropbox}
+                className="font-code text-[9.5px] tracking-[0.14em] uppercase text-(--color-muted) hover:text-(--color-foreground) transition-colors cursor-pointer bg-transparent border-0 p-0"
+              >
+                disconnect
+              </button>
+              <span className="font-code text-[9.5px] tracking-[0.14em] uppercase text-(--color-primary)">
+                Connected
+              </span>
+            </div>
           </div>
         ) : (
           <button
@@ -174,33 +171,6 @@ export function SourcesPanel({ active, setActive, counts, onDisconnect }: Source
         )}
       </div>
 
-      {/* Storage meter */}
-      <div className="mt-[12px] pt-[14px] border-t border-dashed border-(--color-border)">
-        <div className="flex items-baseline justify-between font-code text-[10px] tracking-[0.14em] uppercase text-(--color-muted) mb-[8px]">
-          <span>Storage in use</span>
-          <span><span className="text-(--color-foreground) tabular-nums">2.4</span>&nbsp;/&nbsp;15 GB</span>
-        </div>
-        <div className="h-[4px] bg-(--color-border) rounded-[2px] relative overflow-hidden">
-          <div className="absolute inset-y-0 left-0 w-[9.5%] bg-(--color-primary) rounded-[2px]" />
-          <div
-            className="absolute inset-0"
-            style={{
-              background: "repeating-linear-gradient(45deg, var(--color-primary) 0 4px, color-mix(in oklab, var(--color-primary), transparent 60%) 4px 8px)",
-              clipPath: "inset(0 calc(100% - 16%) 0 9.5%)",
-            }}
-          />
-        </div>
-        <div className="flex items-center justify-between mt-[10px] font-code text-[10px] tracking-[0.12em] uppercase text-(--color-muted)">
-          <span className="inline-flex items-center gap-[6px]">
-            <span className="inline-block w-[6px] h-[6px] bg-(--color-primary)" />
-            Drive 1.4 GB
-          </span>
-          <span className="inline-flex items-center gap-[6px]">
-            <span className="inline-block w-[6px] h-[6px] border border-(--color-primary)" />
-            Dropbox 1.0 GB
-          </span>
-        </div>
-      </div>
     </section>
   );
 }

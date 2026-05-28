@@ -126,7 +126,6 @@ export function DashboardClient() {
               <SourcesPanel
                 active={source}
                 setActive={setSource}
-                counts={counts}
                 onDisconnect={(provider) => {
                   if (provider === "google_drive") setAllRows((prev) => prev.filter((r) => r.source !== "drive"));
                   if (provider === "dropbox")      setAllRows((prev) => prev.filter((r) => r.source !== "dropbox"));
