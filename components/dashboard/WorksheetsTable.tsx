@@ -37,7 +37,17 @@ function EmptyState({ source }: { source: SourceFilter }) {
   );
 }
 
-export function WorksheetsTable({ rows, source }: { rows: Worksheet[]; source: SourceFilter }) {
+export function WorksheetsTable({
+  rows,
+  source,
+  selected,
+  onToggle,
+}: {
+  rows: Worksheet[];
+  source: SourceFilter;
+  selected: Set<string>;
+  onToggle: (id: string) => void;
+}) {
   return (
     <div className="relative bg-(--color-surface) border border-(--color-border)">
       <CropMark position="tl" />
@@ -51,6 +61,7 @@ export function WorksheetsTable({ rows, source }: { rows: Worksheet[]; source: S
         <>
           {/* Header row */}
           <div className="dash-row dash-thead border-b border-(--color-border) font-code text-[10px] tracking-[0.16em] uppercase text-(--color-muted)">
+            <span className="w-[18px] flex-shrink-0" />
             <span className="w-[33px] flex-shrink-0" />
             <span className="flex-1 min-w-0 inline-flex items-center gap-[6px] text-(--color-foreground) cursor-pointer">
               Worksheet <span className="opacity-60">↓</span>
@@ -68,6 +79,16 @@ export function WorksheetsTable({ rows, source }: { rows: Worksheet[]; source: S
                 key={r.id}
                 className={`dash-row transition-[background] duration-[0.15s] hover:bg-[color-mix(in_oklab,var(--color-background),white_2%)] ${i < rows.length - 1 ? "border-b border-dashed border-[color-mix(in_oklab,var(--color-border),transparent_25%)]" : ""}`}
               >
+                {/* Checkbox */}
+                <div className="w-[18px] flex-shrink-0 flex items-center justify-center">
+                  <input
+                    type="checkbox"
+                    checked={selected.has(r.id)}
+                    onChange={() => onToggle(r.id)}
+                    className="w-[14px] h-[14px] flex-shrink-0 accent-[var(--color-primary)] cursor-pointer"
+                  />
+                </div>
+
                 {/* Thumbnail */}
                 <div className="w-[33px] flex-shrink-0 aspect-[210/297] bg-(--color-background) border border-(--color-border) rounded-[1px] overflow-hidden relative">
                   <Thumb variant={r.thumb} />

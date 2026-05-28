@@ -7,6 +7,7 @@ import { SourcesPanel }    from "@/components/dashboard/SourcesPanel";
 import { SessionsPanel }   from "@/components/dashboard/SessionsPanel";
 import { FilterBar }       from "@/components/dashboard/FilterBar";
 import { WorksheetsTable } from "@/components/dashboard/WorksheetsTable";
+import { CreateLinkModal } from "@/components/dashboard/CreateLinkModal";
 import { LIVE_IDS, type SourceFilter, type Worksheet, type ThumbVariant } from "@/components/dashboard/data";
 import type { DriveFile } from "@/lib/google-drive";
 import type { DropboxFile } from "@/lib/dropbox";
@@ -38,10 +39,12 @@ function driveFileToWorksheet(f: DriveFile): Worksheet {
 }
 
 export function DashboardClient() {
-  const [source,  setSource]  = useState<SourceFilter>("all");
-  const [search,  setSearch]  = useState("");
-  const [sort,    setSort]    = useState("Modified");
-  const [allRows, setAllRows] = useState<Worksheet[]>([]);
+  const [source,     setSource]     = useState<SourceFilter>("all");
+  const [search,     setSearch]     = useState("");
+  const [sort,       setSort]       = useState("Modified");
+  const [allRows,    setAllRows]    = useState<Worksheet[]>([]);
+  const [selected,   setSelected]   = useState<Set<string>>(new Set());
+  const [modalOpen,  setModalOpen]  = useState(false);
 
   useEffect(() => {
     async function load() {
@@ -78,6 +81,15 @@ export function DashboardClient() {
     dropbox: allRows.filter((r) => r.source === "dropbox").length,
     live:    LIVE_IDS.size,
   }), [allRows]);
+
+  function onToggle(id: string) {
+    setSelected((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  }
 
   const rows = useMemo(() => {
     let r = allRows;
@@ -121,8 +133,16 @@ export function DashboardClient() {
             </aside>
 
             <section className="min-w-0">
-              <FilterBar source={source} setSource={setSource} counts={counts} sort={sort} setSort={setSort} />
-              <WorksheetsTable rows={rows} source={source} />
+              <FilterBar
+                source={source}
+                setSource={setSource}
+                counts={counts}
+                sort={sort}
+                setSort={setSort}
+                selectedCount={selected.size}
+                onCreateLink={() => setModalOpen(true)}
+              />
+              <WorksheetsTable rows={rows} source={source} selected={selected} onToggle={onToggle} />
               <div className="mt-[28px] pt-[22px] border-t border-(--color-border) flex items-center justify-between flex-wrap gap-[14px] font-code text-[10px] tracking-[0.12em] uppercase text-(--color-muted)">
                 <span>showing {rows.length} of {counts.total}</span>
                 <span>tracelight · v0.1 · beta</span>
@@ -135,6 +155,26 @@ export function DashboardClient() {
           </div>
         </div>
       </main>
+
+      <CreateLinkModal
+        open={modalOpen}
+        files={Array.from(selected).flatMap((wsId) => {
+          const ws = allRows.find((r) => r.id === wsId);
+          if (!ws) return [];
+          return [{
+            id: wsId,
+            name: ws.name,
+            provider: ws.source === "drive" ? "google_drive" : "dropbox",
+            fileId: ws.id,
+            filePath: ws.path,
+            mimeType: ws.source === "drive" ? "application/pdf" : "application/octet-stream",
+          }];
+        })}
+        onClose={() => {
+          setModalOpen(false);
+          setSelected(new Set());
+        }}
+      />
     </div>
   );
 }

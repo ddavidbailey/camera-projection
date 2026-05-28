@@ -9,6 +9,8 @@ interface FilterBarProps {
   counts: { total: number; drive: number; dropbox: number };
   sort: string;
   setSort: (v: string) => void;
+  selectedCount: number;
+  onCreateLink: () => void;
 }
 
 function SegBtn({
@@ -30,7 +32,7 @@ function SegBtn({
   );
 }
 
-export function FilterBar({ source, setSource, counts, sort, setSort }: FilterBarProps) {
+export function FilterBar({ source, setSource, counts, sort, setSort, selectedCount, onCreateLink }: FilterBarProps) {
   return (
     <div className="flex items-center gap-[14px] mb-[14px] flex-wrap">
       <div
@@ -59,6 +61,17 @@ export function FilterBar({ source, setSource, counts, sort, setSort }: FilterBa
         Sort: <strong className="text-(--color-foreground) ml-1">{sort}</strong>
         <span className="opacity-50">▾</span>
       </button>
+
+      {selectedCount > 0 && (
+        <button
+          type="button"
+          onClick={onCreateLink}
+          className="appearance-none inline-flex items-center gap-[8px] px-[12px] py-[6px] bg-(--color-foreground) text-(--color-surface) border border-(--color-foreground) rounded-full font-code text-[10.5px] tracking-[0.12em] uppercase cursor-pointer hover:bg-(--color-surface) hover:text-(--color-foreground) transition-[background,color] duration-[0.18s]"
+        >
+          Create Workshop Link
+          <span className="opacity-70 tabular-nums text-[10px]">{selectedCount}</span>
+        </button>
+      )}
     </div>
   );
 }
