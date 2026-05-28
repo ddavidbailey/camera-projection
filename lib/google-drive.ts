@@ -61,7 +61,8 @@ export async function listDriveFiles(userId: string): Promise<DriveFile[]> {
 
 export async function downloadDriveFile(
   userId: string,
-  fileId: string
+  fileId: string,
+  mimeType: string
 ): Promise<{ stream: ReadableStream; contentType: string }> {
   const db = getPool();
   const { rows } = await db.query(
@@ -78,7 +79,7 @@ export async function downloadDriveFile(
   // Fix 2: Explicit pre-flight token refresh — do not defer to an event listener
   // in a serverless environment where the function may shut down before the DB
   // write completes.
-  const expired = row.tokenExpiresAt && new Date(row.tokenExpiresAt) < new Date();
+  const expired = row.tokenExpiresAt && new Date(row.tokenExpiresAt) < new Date(Date.now() + 60_000);
   let accessToken = decrypt(row.accessToken);
 
   if (expired && row.refreshToken) {
@@ -108,17 +109,8 @@ export async function downloadDriveFile(
 
   const drive = google.drive({ version: "v3", auth: oauth2 });
 
-  const [metaRes, mediaRes] = await Promise.all([
-    drive.files.get({ fileId, fields: "mimeType" }),
-    drive.files.get({ fileId, alt: "media" }, { responseType: "stream" }),
-  ]);
-
-  const contentType = metaRes.data.mimeType ?? "application/octet-stream";
-  const nodeStream = mediaRes.data as unknown as import("node:stream").Readable;
-  // Fix 1: Pause the Node stream before converting to a Web stream to prevent
-  // byte-dropping on flowing streams in Node 18+.
+  const mediaRes = await drive.files.get({ fileId, alt: "media" }, { responseType: "stream" });
+  const nodeStream = mediaRes.data as unknown as Readable;
   nodeStream.pause();
-  const stream = Readable.toWeb(nodeStream) as ReadableStream;
-
-  return { stream, contentType };
+  return { stream: Readable.toWeb(nodeStream) as ReadableStream, contentType: mimeType };
 }

@@ -26,10 +26,9 @@ export async function GET(
 
     const link = linkRows[0] as { id: string; userId: string; expiresAt: Date };
 
-    // 2. Look up the file record to get its provider and file name
-    // Fix 4: Also select "fileName" so we can set Content-Disposition.
+    // 2. Look up the file record to get its provider, file name, and mimeType
     const { rows: fileRows } = await db.query(
-      `select "provider", "fileName"
+      `select "provider", "fileName", "mimeType"
        from "share_link_files"
        where "shareLinkId" = $1 and "fileId" = $2`,
       [link.id, fileId]
@@ -41,6 +40,7 @@ export async function GET(
 
     const provider = fileRows[0].provider as string;
     const fileName = fileRows[0].fileName as string;
+    const mimeType = fileRows[0].mimeType as string;
 
     // 3. Stream the file from the appropriate provider
     try {
@@ -48,18 +48,19 @@ export async function GET(
       let contentType: string;
 
       if (provider === "google_drive") {
-        ({ stream, contentType } = await downloadDriveFile(link.userId, fileId));
+        ({ stream, contentType } = await downloadDriveFile(link.userId, fileId, mimeType));
       } else if (provider === "dropbox") {
         ({ stream, contentType } = await downloadDropboxFile(link.userId, fileId));
       } else {
         return new Response("Unknown provider", { status: 400 });
       }
 
-      // Fix 4: Add Content-Disposition and Cache-Control headers.
+      // RFC 5987-compliant Content-Disposition: ASCII-safe fallback + UTF-8 encoded name
+      const safeName = fileName.replace(/[^\w. ()-]/g, "_");
       return new Response(stream, {
         headers: {
           "Content-Type": contentType,
-          "Content-Disposition": `inline; filename="${encodeURIComponent(fileName)}"`,
+          "Content-Disposition": `inline; filename="${safeName}"; filename*=UTF-8''${encodeURIComponent(fileName)}`,
           "Cache-Control": "private, no-store",
         },
       });
