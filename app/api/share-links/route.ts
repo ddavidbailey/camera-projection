@@ -32,6 +32,23 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "files must be a non-empty array" }, { status: 400 });
   }
 
+  if (files.length > 50) {
+    return NextResponse.json({ error: "Too many files (max 50)" }, { status: 400 });
+  }
+
+  const requiredStrings = ["fileId", "provider", "fileName", "filePath", "mimeType"] as const;
+  for (const f of files) {
+    if (
+      typeof f !== "object" || f === null ||
+      requiredStrings.some(k => typeof (f as Record<string, unknown>)[k] !== "string")
+    ) {
+      return NextResponse.json(
+        { error: "Each file must have fileId, provider, fileName, filePath, mimeType as strings" },
+        { status: 400 }
+      );
+    }
+  }
+
   if (!(VALID_EXPIRY_HOURS as readonly unknown[]).includes(expiryHours)) {
     return NextResponse.json(
       { error: "expiryHours must be 1, 4, 8, or 24" },
@@ -46,40 +63,47 @@ export async function POST(request: NextRequest) {
   const hours = expiryHours as ExpiryHours;
 
   try {
-    await db.query("BEGIN");
+    const client = await db.connect();
+    try {
+      await client.query("BEGIN");
 
-    await db.query(
-      `INSERT INTO "share_links" ("id", "token", "userId", "expiresAt")
-       VALUES ($1, $2, $3, now() + ($4 || ' hours')::interval)`,
-      [id, token, userId, hours],
-    );
-
-    for (let i = 0; i < files.length; i++) {
-      const file = files[i] as FileInput;
-      await db.query(
-        `INSERT INTO "share_link_files"
-           ("id", "shareLinkId", "provider", "fileId", "fileName", "filePath", "mimeType", "sortOrder")
-         VALUES ($1, $2, $3, $4, $5, $6, $7, $8)`,
-        [
-          randomUUID(),
-          id,
-          file.provider,
-          file.fileId,
-          file.fileName,
-          file.filePath,
-          file.mimeType,
-          i,
-        ],
+      await client.query(
+        `INSERT INTO "share_links" ("id", "token", "userId", "expiresAt")
+         VALUES ($1, $2, $3, now() + make_interval(hours => $4::int))`,
+        [id, token, userId, hours],
       );
+
+      for (let i = 0; i < files.length; i++) {
+        const file = files[i] as FileInput;
+        await client.query(
+          `INSERT INTO "share_link_files"
+             ("id", "shareLinkId", "provider", "fileId", "fileName", "filePath", "mimeType", "sortOrder")
+           VALUES ($1, $2, $3, $4, $5, $6, $7, $8)`,
+          [
+            randomUUID(),
+            id,
+            file.provider,
+            file.fileId,
+            file.fileName,
+            file.filePath,
+            file.mimeType,
+            i,
+          ],
+        );
+      }
+
+      await client.query("COMMIT");
+
+      return NextResponse.json({ id, token }, { status: 201 });
+    } catch (err) {
+      await client.query("ROLLBACK");
+      throw err;
+    } finally {
+      client.release();
     }
-
-    await db.query("COMMIT");
-
-    return NextResponse.json({ id, token }, { status: 201 });
   } catch (err) {
-    await db.query("ROLLBACK");
-    const message = err instanceof Error ? err.message : "Unknown error";
-    return NextResponse.json({ error: message }, { status: 500 });
+    console.error("[share-links POST]", err);
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }
 
@@ -148,7 +172,7 @@ export async function GET() {
 
     return NextResponse.json(result);
   } catch (err) {
-    const message = err instanceof Error ? err.message : "Unknown error";
-    return NextResponse.json({ error: message }, { status: 500 });
+    console.error("[share-links GET]", err);
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }
