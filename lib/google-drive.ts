@@ -74,26 +74,37 @@ export async function downloadDriveFile(
   if (rows.length === 0) throw new Error("google_drive integration not found");
 
   const row = rows[0];
-  const oauth2 = new google.auth.OAuth2(
-    process.env.GOOGLE_CLIENT_ID,
-    process.env.GOOGLE_CLIENT_SECRET
-  );
 
-  oauth2.setCredentials({
-    access_token:  decrypt(row.accessToken),
-    refresh_token: row.refreshToken ? decrypt(row.refreshToken) : undefined,
-    expiry_date:   row.tokenExpiresAt ? new Date(row.tokenExpiresAt).getTime() : undefined,
-  });
+  // Fix 2: Explicit pre-flight token refresh — do not defer to an event listener
+  // in a serverless environment where the function may shut down before the DB
+  // write completes.
+  const expired = row.tokenExpiresAt && new Date(row.tokenExpiresAt) < new Date();
+  let accessToken = decrypt(row.accessToken);
 
-  oauth2.on("tokens", async (tokens) => {
-    if (!tokens.access_token) return;
+  if (expired && row.refreshToken) {
+    const refreshRes = await fetch("https://oauth2.googleapis.com/token", {
+      method: "POST",
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body: new URLSearchParams({
+        grant_type: "refresh_token",
+        refresh_token: decrypt(row.refreshToken),
+        client_id: process.env.GOOGLE_CLIENT_ID!,
+        client_secret: process.env.GOOGLE_CLIENT_SECRET!,
+      }),
+    });
+    if (!refreshRes.ok) throw new Error(`Google token refresh failed: ${refreshRes.status}`);
+    const refreshData = await refreshRes.json() as { access_token: string; expires_in: number };
+    accessToken = refreshData.access_token;
+    const expiresAt = new Date(Date.now() + refreshData.expires_in * 1000);
     await db.query(
-      `update "user_integrations"
-       set "accessToken"=$1, "tokenExpiresAt"=$2, "updatedAt"=now()
-       where "userId"=$3 and "provider"='google_drive'`,
-      [encrypt(tokens.access_token), tokens.expiry_date ? new Date(tokens.expiry_date) : null, userId]
+      `update "user_integrations" set "accessToken"=$1, "tokenExpiresAt"=$2, "updatedAt"=now() where "userId"=$3 and "provider"='google_drive'`,
+      [encrypt(accessToken), expiresAt, userId]
     );
-  });
+  }
+
+  const oauth2 = new google.auth.OAuth2(process.env.GOOGLE_CLIENT_ID, process.env.GOOGLE_CLIENT_SECRET);
+  oauth2.setCredentials({ access_token: accessToken });
+  // Do NOT attach an oauth2.on("tokens") listener here
 
   const drive = google.drive({ version: "v3", auth: oauth2 });
 
@@ -104,6 +115,9 @@ export async function downloadDriveFile(
 
   const contentType = metaRes.data.mimeType ?? "application/octet-stream";
   const nodeStream = mediaRes.data as unknown as import("node:stream").Readable;
+  // Fix 1: Pause the Node stream before converting to a Web stream to prevent
+  // byte-dropping on flowing streams in Node 18+.
+  nodeStream.pause();
   const stream = Readable.toWeb(nodeStream) as ReadableStream;
 
   return { stream, contentType };
