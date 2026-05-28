@@ -57,6 +57,7 @@ function FileSummary({ files }: { files: ShareLinkFile[] }) {
 
 function LinkCard({ link, onRevoked }: { link: ShareLink; onRevoked: (id: string) => void }) {
   const [copyLabel, setCopyLabel] = useState("copy link");
+  const [revokeError, setRevokeError] = useState<string | null>(null);
   const expiry = formatExpiry(link.expiresAt);
 
   function handleCopy() {
@@ -66,9 +67,15 @@ function LinkCard({ link, onRevoked }: { link: ShareLink; onRevoked: (id: string
   }
 
   async function handleRevoke() {
-    const res = await fetch(`/api/share-links/${link.id}`, { method: "DELETE" });
-    if (res.ok) {
-      onRevoked(link.id);
+    try {
+      const res = await fetch(`/api/share-links/${link.id}`, { method: "DELETE" });
+      if (res.ok) {
+        onRevoked(link.id);
+      } else {
+        setRevokeError("Failed to revoke");
+      }
+    } catch {
+      setRevokeError("Network error");
     }
   }
 
@@ -108,6 +115,11 @@ function LinkCard({ link, onRevoked }: { link: ShareLink; onRevoked: (id: string
           revoke
         </button>
       </div>
+      {revokeError && (
+        <p className="font-code text-[9.5px] tracking-[0.12em] uppercase text-(--color-warning) mt-[4px]">
+          {revokeError}
+        </p>
+      )}
     </article>
   );
 }
@@ -120,14 +132,22 @@ export function SessionsPanel({
   refreshKey?: number;
 }) {
   const [links, setLinks] = useState<ShareLink[]>([]);
+  const [fetchError, setFetchError] = useState<string | null>(null);
   // tick state forces re-render every 60s so expiry countdowns stay fresh
   const [, setTick] = useState(0);
 
   const loadLinks = useCallback(async () => {
-    const res = await fetch("/api/share-links");
-    if (res.ok) {
-      const data = (await res.json()) as ShareLink[];
-      setLinks(data);
+    try {
+      const res = await fetch("/api/share-links");
+      if (res.ok) {
+        const data = (await res.json()) as ShareLink[];
+        setLinks(data);
+        setFetchError(null);
+      } else {
+        setFetchError("Could not load sessions");
+      }
+    } catch {
+      setFetchError("Network error");
     }
   }, []);
 
@@ -161,7 +181,11 @@ export function SessionsPanel({
         </span>
       </div>
 
-      {links.length === 0 ? (
+      {fetchError ? (
+        <p className="font-code text-[10.5px] tracking-[0.14em] uppercase text-(--color-warning) text-center py-[20px]">
+          {fetchError}
+        </p>
+      ) : links.length === 0 ? (
         <p className="font-code text-[10.5px] tracking-[0.14em] uppercase text-(--color-muted) text-center py-[20px]">
           No active sessions
         </p>
