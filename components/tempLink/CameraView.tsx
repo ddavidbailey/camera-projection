@@ -16,6 +16,7 @@ export interface CameraViewProps {
   onRequest: () => void;
   torch: boolean;
   flipped: boolean;
+  fileUrl?: string | null;
 }
 
 export function CameraView({

@@ -23,7 +23,7 @@ interface ViewClientProps {
   files: ShareLinkFile[];
 }
 
-export function ViewClient({ token: _token, files }: ViewClientProps) {
+export function ViewClient({ token, files }: ViewClientProps) {
   const [cameraState, setCameraState] = useState<CameraState>("idle");
   const [zoom, setZoom] = useState(1);
   const [brightness, setBrightness] = useState(1);
@@ -71,7 +71,9 @@ export function ViewClient({ token: _token, files }: ViewClientProps) {
 
   const clampedPageIndex = Math.min(pageIndex, Math.max(0, files.length - 1));
 
-  const worksheet = files[0] ?? null;
+  const proxyUrl = files[clampedPageIndex]
+    ? `/api/t/${token}/file/${files[clampedPageIndex].fileId}`
+    : null;
 
   const requestCamera = useCallback(async () => {
     try {
@@ -144,12 +146,13 @@ export function ViewClient({ token: _token, files }: ViewClientProps) {
               onRequest={requestCamera}
               torch={torch}
               flipped={flipped}
+              fileUrl={proxyUrl}
             />
 
             <aside className="flex flex-col gap-[14px] min-[880px]:min-h-0 min-[880px]:overflow-y-auto">
               <WorksheetPanel
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                worksheet={worksheet as any}
+                token={token}
+                files={files}
                 pageIndex={clampedPageIndex}
                 setPageIndex={setPageIndex}
               />
