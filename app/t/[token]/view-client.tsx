@@ -69,6 +69,8 @@ export function ViewClient({ token: _token, files }: ViewClientProps) {
   // Paper detection is simulated — real detection will wire in OpenCV.js
   const paperDetected = false;
 
+  const clampedPageIndex = Math.min(pageIndex, Math.max(0, files.length - 1));
+
   const worksheet = files[0] ?? null;
 
   const requestCamera = useCallback(async () => {
@@ -137,7 +139,7 @@ export function ViewClient({ token: _token, files }: ViewClientProps) {
               brightness={brightness}
               overlayOpacity={overlayOpacity}
               paperDetected={paperDetected}
-              pageIndex={pageIndex}
+              pageIndex={clampedPageIndex}
               cameraState={cameraState}
               onRequest={requestCamera}
               torch={torch}
@@ -148,7 +150,7 @@ export function ViewClient({ token: _token, files }: ViewClientProps) {
               <WorksheetPanel
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 worksheet={worksheet as any}
-                pageIndex={Math.min(pageIndex, Math.max(0, files.length - 1))}
+                pageIndex={clampedPageIndex}
                 setPageIndex={setPageIndex}
               />
               <ControlsPanel
