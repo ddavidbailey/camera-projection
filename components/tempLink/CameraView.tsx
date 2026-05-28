@@ -16,6 +16,7 @@ export interface CameraViewProps {
   onRequest: () => void;
   torch: boolean;
   flipped: boolean;
+  fileUrl?: string | null;
 }
 
 export function CameraView({
@@ -23,6 +24,7 @@ export function CameraView({
   paperDetected, pageIndex,
   cameraState, onRequest,
   torch, flipped,
+  fileUrl: _fileUrl,
 }: CameraViewProps) {
   const videoRef  = useRef<HTMLVideoElement>(null);
   const streamRef = useRef<MediaStream | null>(null);

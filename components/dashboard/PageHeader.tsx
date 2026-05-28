@@ -1,8 +1,6 @@
-import Link from "next/link";
-
 export function PageHeader() {
   return (
-    <div className="grid grid-cols-[minmax(0,1fr)_auto] items-end gap-[24px] mb-[22px]">
+    <div className="mb-[22px]">
       <div>
         <div className="inline-flex items-center gap-[8px] font-code text-[10.5px] tracking-[0.16em] uppercase text-(--color-muted) mb-[10px]">
           <span
@@ -21,15 +19,6 @@ export function PageHeader() {
         </p>
       </div>
 
-      <div className="flex items-center gap-[10px] flex-wrap justify-end">
-        <Link
-          href="/t/session"
-          className="group font-code text-[11px] font-medium tracking-[0.14em] uppercase px-[16px] py-[10px] bg-(--color-foreground) text-(--color-surface) border border-(--color-foreground) rounded-[10px] inline-flex items-center gap-[9px] no-underline hover:-translate-y-px transition-transform duration-[0.18s]"
-        >
-          New session
-          <span className="transition-transform duration-200 group-hover:translate-x-[2px]">→</span>
-        </Link>
-      </div>
     </div>
   );
 }
