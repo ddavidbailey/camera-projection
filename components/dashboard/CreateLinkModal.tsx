@@ -5,7 +5,7 @@ import { CropMark } from "./CropMark";
 
 interface ModalFile {
   id: string;
-  name: string;
+  fileName: string;
   provider: string;
   fileId: string;
   filePath: string;
@@ -108,7 +108,7 @@ export function CreateLinkModal({ open, files, onClose }: CreateLinkModalProps) 
                   className="flex items-center justify-between gap-[10px] px-[10px] py-[8px] border border-(--color-border) bg-(--color-background)"
                 >
                   <span className="font-ui text-[13px] text-(--color-foreground) truncate min-w-0">
-                    {f.name.replace(/\.[^.]+$/, "")}
+                    {f.fileName.replace(/\.[^.]+$/, "")}
                   </span>
                   <span className="flex-shrink-0 font-code text-[9px] tracking-[0.14em] uppercase px-[6px] py-[3px] border border-(--color-border) text-(--color-muted) rounded-full">
                     {f.provider === "google_drive" ? "Drive" : "Dropbox"}

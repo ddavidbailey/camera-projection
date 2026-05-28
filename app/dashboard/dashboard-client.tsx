@@ -164,7 +164,7 @@ export function DashboardClient() {
           if (!ws) return [];
           return [{
             id: wsId,
-            name: ws.name,
+            fileName: ws.name,
             provider: ws.source === "drive" ? "google_drive" : "dropbox",
             fileId: ws.id,
             filePath: ws.path,
