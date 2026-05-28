@@ -10,7 +10,7 @@ export interface Worksheet {
 }
 
 export interface WorksheetPanelProps {
-  worksheet: Worksheet;
+  worksheet: Worksheet | null;
   pageIndex: number;
   setPageIndex: (v: number) => void;
 }
@@ -19,6 +19,8 @@ const pagerBtn =
   "bg-transparent border border-(--color-border) w-[26px] h-[26px] rounded-[2px] inline-grid place-items-center cursor-pointer text-(--color-foreground) transition-[border-color,color] duration-[0.18s] hover:border-(--color-primary) hover:text-(--color-primary) disabled:opacity-35 disabled:cursor-default";
 
 export function WorksheetPanel({ worksheet, pageIndex, setPageIndex }: WorksheetPanelProps) {
+  if (!worksheet) return null;
+
   return (
     <section className="relative bg-(--color-surface) border border-(--color-border) p-[18px] pb-[16px]" aria-label="Worksheet">
       <CropMark position="tl" />
