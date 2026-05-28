@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { CropMark } from "./CropMark";
 
 interface ModalFile {
@@ -26,36 +26,37 @@ export function CreateLinkModal({ open, files, onClose }: CreateLinkModalProps) 
   const [token, setToken] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!open) return;
+    const handle = (e: KeyboardEvent) => { if (e.key === "Escape") handleClose(); };
+    document.addEventListener("keydown", handle);
+    return () => document.removeEventListener("keydown", handle);
+  }, [open]);
 
   if (!open) return null;
 
-  const generatedUrl = token ? `${window.location.origin}/t/${token}` : "";
+  const generatedUrl = token && typeof window !== "undefined" ? `${window.location.origin}/t/${token}` : token ? `/t/${token}` : "";
 
   async function handleGenerate() {
     setLoading(true);
+    setError(null);
     try {
-      const body = {
-        files: files.map((f) => ({
-          fileId: f.fileId,
-          provider: f.provider,
-          fileName: f.name,
-          filePath: f.filePath,
-          mimeType: f.mimeType,
-        })),
-        expiryHours,
-      };
-
       const res = await fetch("/api/share-links", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(body),
+        body: JSON.stringify({ files, expiryHours }),
       });
-
-      if (!res.ok) throw new Error("Failed to create link");
-
-      const data = await res.json();
+      if (!res.ok) {
+        const body = await res.json().catch(() => ({}));
+        throw new Error((body as { error?: string }).error ?? "Failed to create link");
+      }
+      const data = await res.json() as { token: string };
       setToken(data.token);
       setStep("created");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Unexpected error");
     } finally {
       setLoading(false);
     }
@@ -72,12 +73,19 @@ export function CreateLinkModal({ open, files, onClose }: CreateLinkModalProps) 
     setExpiryHours(4);
     setToken(null);
     setCopied(false);
+    setError(null);
     onClose();
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
-      <div className="relative bg-(--color-surface) border border-(--color-border) p-[28px] w-full max-w-[480px] mx-4">
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm"
+      onClick={handleClose}
+    >
+      <div
+        className="relative bg-(--color-surface) border border-(--color-border) p-[28px] w-full max-w-[480px] mx-4"
+        onClick={(e) => e.stopPropagation()}
+      >
         <CropMark position="tl" />
         <CropMark position="tr" />
         <CropMark position="bl" />
@@ -131,6 +139,12 @@ export function CreateLinkModal({ open, files, onClose }: CreateLinkModalProps) 
                 ))}
               </div>
             </div>
+
+            {error && (
+              <p className="font-code text-[10px] tracking-[0.12em] uppercase text-(--color-error, red) mt-[8px] mb-[4px]">
+                {error}
+              </p>
+            )}
 
             {/* Actions */}
             <div className="flex flex-col gap-[10px]">

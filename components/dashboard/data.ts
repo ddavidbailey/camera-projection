@@ -16,6 +16,7 @@ export interface Worksheet {
   source: SourceId;
   modified: string;
   thumb: ThumbVariant;
+  mimeType?: string;
 }
 
 export interface Session {

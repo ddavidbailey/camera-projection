@@ -85,6 +85,7 @@ export function WorksheetsTable({
                     type="checkbox"
                     checked={selected.has(r.id)}
                     onChange={() => onToggle(r.id)}
+                    aria-label={`Select ${r.name}`}
                     className="w-[14px] h-[14px] flex-shrink-0 accent-[var(--color-primary)] cursor-pointer"
                   />
                 </div>

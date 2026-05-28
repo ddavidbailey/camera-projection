@@ -35,6 +35,7 @@ function driveFileToWorksheet(f: DriveFile): Worksheet {
     source:   "drive",
     modified: relativeTime(f.modifiedTime),
     thumb:    mimeToThumb(f.mimeType),
+    mimeType: f.mimeType,
   };
 }
 
@@ -167,7 +168,7 @@ export function DashboardClient() {
             provider: ws.source === "drive" ? "google_drive" : "dropbox",
             fileId: ws.id,
             filePath: ws.path,
-            mimeType: ws.source === "drive" ? "application/pdf" : "application/octet-stream",
+            mimeType: ws.mimeType ?? (ws.source === "drive" ? "application/pdf" : "application/octet-stream"),
           }];
         })}
         onClose={() => {
