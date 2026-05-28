@@ -114,7 +114,7 @@ export async function downloadDropboxFile(
     method: "POST",
     headers: {
       Authorization:      `Bearer ${accessToken}`,
-      "Dropbox-API-Arg":  JSON.stringify({ path: `id:${fileId}` }),
+      "Dropbox-API-Arg":  JSON.stringify({ path: fileId }),
     },
   });
 
