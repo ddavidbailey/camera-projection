@@ -7,17 +7,22 @@ declare global {
 
 // ── OpenCV ──────────────────────────────────────────────────────────────────
 let cvReady = false;
-const cvCallbacks: (() => void)[] = [];
+let cvFailed = false;
+const cvResolve: (() => void)[] = [];
+const cvReject: ((e: Error) => void)[] = [];
 
 function loadOpenCV(): Promise<void> {
   if (cvReady) return Promise.resolve();
-  return new Promise((resolve) => {
-    cvCallbacks.push(resolve);
+  if (cvFailed) return Promise.reject(new Error("opencv.js failed to load"));
+  return new Promise((resolve, reject) => {
+    cvResolve.push(resolve);
+    cvReject.push(reject);
     if (document.getElementById("opencv-script")) return;
 
     function onReady() {
       cvReady = true;
-      cvCallbacks.splice(0).forEach((cb) => cb());
+      cvResolve.splice(0).forEach((cb) => cb());
+      cvReject.length = 0;
     }
 
     const script = document.createElement("script");
@@ -27,7 +32,6 @@ function loadOpenCV(): Promise<void> {
     script.onload = () => {
       const cv = window.cv;
       if (!cv) return;
-      // cv may be a Promise (newer OpenCV.js builds) or an object
       if (typeof cv.then === "function") {
         cv.then(onReady);
       } else if (typeof cv.Mat === "function") {
@@ -36,7 +40,12 @@ function loadOpenCV(): Promise<void> {
         cv["onRuntimeInitialized"] = onReady;
       }
     };
-    script.onerror = () => cvCallbacks.splice(0); // unblock callers
+    script.onerror = () => {
+      cvFailed = true;
+      const err = new Error("opencv.js failed to load");
+      cvResolve.length = 0;
+      cvReject.splice(0).forEach((cb) => cb(err));
+    };
     document.head.appendChild(script);
   });
 }
@@ -169,7 +178,7 @@ function detectQuad(
     c.delete();
   }
 
-  [src, roiMat, gray, blurred, thDst, edges, contours, hierarchy].forEach((m) => m.delete());
+  [roiMat, gray, blurred, thDst, edges, contours, hierarchy, src].forEach((m) => m.delete());
   return best;
 }
 
