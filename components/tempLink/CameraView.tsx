@@ -1,16 +1,20 @@
 "use client";
 
 import { useEffect, useRef } from "react";
+import type { MutableRefObject, RefObject } from "react";
 import { ProjectionOverlay } from "./ProjectionOverlay";
 import { CropMark } from "./CropMark";
+import type { DetectionStatus, Corners } from "@/hooks/usePaperDetection";
 
 export type CameraState = "idle" | "live" | "denied";
 
 export interface CameraViewProps {
+  videoRef: RefObject<HTMLVideoElement | null>;
   zoom: number;
   brightness: number;
   overlayOpacity: number;
-  paperDetected: boolean;
+  detectionStatus: DetectionStatus;
+  cornersRef: MutableRefObject<Corners | null>;
   pageIndex: number;
   cameraState: CameraState;
   onRequest: () => void;
@@ -20,13 +24,13 @@ export interface CameraViewProps {
 }
 
 export function CameraView({
+  videoRef,
   zoom, brightness, overlayOpacity,
-  paperDetected, pageIndex,
+  detectionStatus, cornersRef: _cornersRef, pageIndex,
   cameraState, onRequest,
   torch, flipped,
   fileUrl: _fileUrl,
 }: CameraViewProps) {
-  const videoRef  = useRef<HTMLVideoElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
 
   useEffect(() => {
@@ -104,7 +108,7 @@ export function CameraView({
       />
 
       {/* Overlay — only while searching for paper */}
-      {cameraState === "live" && !paperDetected && (
+      {cameraState === "live" && !(detectionStatus === "locked") && (
         <svg
           className="absolute inset-0 w-full h-full pointer-events-none z-[3]"
           viewBox="0 0 400 300"
@@ -124,17 +128,17 @@ export function CameraView({
             <span className="inline-flex items-center gap-[6px] px-[8px] py-[4px] border border-[rgba(248,242,228,0.22)] rounded-full bg-[rgba(0,0,0,0.28)] backdrop-blur-[6px]">
               <span
                 className={`w-[5px] h-[5px] rounded-full ${
-                  paperDetected
+                  detectionStatus === "locked"
                     ? "bg-(--color-secondary) shadow-[0_0_0_3px_color-mix(in_oklab,var(--color-secondary),transparent_75%)]"
                     : "bg-(--color-primary) shadow-[0_0_0_3px_color-mix(in_oklab,var(--color-primary),transparent_75%)] animate-auth-pulse"
                 }`}
               />
-              {paperDetected ? "Paper locked" : "Searching"}
+              {detectionStatus === "locked" ? "Paper locked" : "Searching"}
             </span>
           </div>
 
           {/* "Center paper" prompt */}
-          {!paperDetected && (
+          {!(detectionStatus === "locked") && (
             <div className="absolute top-[64px] left-1/2 -translate-x-1/2 z-[4] text-center pointer-events-none max-w-[76%] px-[18px] py-[10px]">
               <div className="inline-flex items-center gap-[8px] font-code text-[10px] tracking-[0.18em] uppercase text-[rgba(248,242,228,0.7)] px-[10px] py-[4px] border border-[rgba(248,242,228,0.18)] rounded-full bg-[rgba(0,0,0,0.32)] backdrop-blur-[6px] mb-[12px]">
                 <span className="w-[5px] h-[5px] rounded-full bg-(--color-primary) shadow-[0_0_0_3px_color-mix(in_oklab,var(--color-primary),transparent_75%)] animate-auth-pulse" />

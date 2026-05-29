@@ -7,6 +7,7 @@ import { CameraView } from "@/components/tempLink/CameraView";
 import { ControlsPanel } from "@/components/tempLink/ControlsPanel";
 import { WorksheetPanel, type ShareLinkFile } from "@/components/tempLink/WorksheetPanel";
 import type { CameraState } from "@/components/tempLink/CameraView";
+import { usePaperDetection } from "@/hooks/usePaperDetection";
 
 interface ViewClientProps {
   token: string;
@@ -86,8 +87,11 @@ export function ViewClient({ token, files }: ViewClientProps) {
     };
   }, [token, files]);
 
-  // Paper detection is simulated — real detection will wire in OpenCV.js
-  const paperDetected = false;
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const { cornersRef, status: detectionStatus } = usePaperDetection({
+    videoRef,
+    cameraActive: cameraState === "live",
+  });
 
   const clampedPageIndex = Math.min(pageIndex, Math.max(0, files.length - 1));
 
@@ -155,10 +159,12 @@ export function ViewClient({ token, files }: ViewClientProps) {
         <div className="w-full max-w-[1480px] mx-auto px-8 max-[720px]:px-[18px] min-[880px]:flex-1 min-[880px]:min-h-0 min-[880px]:flex min-[880px]:flex-col">
           <div className="grid grid-cols-[minmax(0,1fr)_260px] gap-[22px] items-start max-[880px]:grid-cols-1 min-[880px]:flex-1 min-[880px]:min-h-0 min-[880px]:items-stretch">
             <CameraView
+              videoRef={videoRef}
               zoom={zoom}
               brightness={brightness}
               overlayOpacity={overlayOpacity}
-              paperDetected={paperDetected}
+              detectionStatus={detectionStatus}
+              cornersRef={cornersRef}
               pageIndex={clampedPageIndex}
               cameraState={cameraState}
               onRequest={requestCamera}
