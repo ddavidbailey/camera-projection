@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import Link from "next/link";
 import { Logomark } from "@/components/tempLink/Logomark";
 import { CameraView } from "@/components/tempLink/CameraView";
@@ -21,6 +21,8 @@ export function ViewClient({ token, files }: ViewClientProps) {
   const [torch, setTorch] = useState(false);
   const [flipped, setFlipped] = useState(false);
   const [pageIndex, setPageIndex] = useState(0);
+  const [fileUrls, setFileUrls] = useState<(string | null)[]>(() => new Array(files.length).fill(null));
+  const blobUrlsRef = useRef<string[]>([]);
 
   // Check existing camera permission on mount — auto-start if already granted,
   // jump to denied state if blocked. Safari may not support querying "camera",
@@ -56,14 +58,40 @@ export function ViewClient({ token, files }: ViewClientProps) {
     };
   }, []);
 
+  // Fetch all files once on mount and store as blob URLs so switching
+  // worksheets never triggers additional API calls.
+  useEffect(() => {
+    if (files.length === 0) return;
+    const ac = new AbortController();
+
+    files.forEach((file, i) => {
+      fetch(`/api/t/${token}/file/${file.fileId}`, { signal: ac.signal })
+        .then((res) => (res.ok ? res.blob() : Promise.reject()))
+        .then((blob) => {
+          const url = URL.createObjectURL(blob);
+          blobUrlsRef.current[i] = url;
+          setFileUrls((prev) => {
+            const next = [...prev];
+            next[i] = url;
+            return next;
+          });
+        })
+        .catch(() => {/* aborted or failed — slot stays null */});
+    });
+
+    return () => {
+      ac.abort();
+      blobUrlsRef.current.forEach((url) => URL.revokeObjectURL(url));
+      blobUrlsRef.current = [];
+    };
+  }, [token, files]);
+
   // Paper detection is simulated — real detection will wire in OpenCV.js
   const paperDetected = false;
 
   const clampedPageIndex = Math.min(pageIndex, Math.max(0, files.length - 1));
 
-  const proxyUrl = files[clampedPageIndex]
-    ? `/api/t/${token}/file/${files[clampedPageIndex].fileId}`
-    : null;
+  const proxyUrl = fileUrls[clampedPageIndex] ?? null;
 
   const requestCamera = useCallback(async () => {
     try {
@@ -144,6 +172,8 @@ export function ViewClient({ token, files }: ViewClientProps) {
                 files={files}
                 pageIndex={clampedPageIndex}
                 setPageIndex={setPageIndex}
+                fileUrl={proxyUrl}
+                mimeType={files[clampedPageIndex]?.mimeType ?? ""}
               />
               <ControlsPanel
                 zoom={zoom}

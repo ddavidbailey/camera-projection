@@ -17,12 +17,23 @@ export interface WorksheetPanelProps {
   files: ShareLinkFile[];
   pageIndex: number;
   setPageIndex: (i: number) => void;
+  fileUrl: string | null;
+  mimeType: string;
+}
+
+function resolvedMimeType(mimeType: string, fileName: string): string {
+  if (mimeType && mimeType !== "application/octet-stream") return mimeType;
+  const ext = fileName.split(".").pop()?.toLowerCase();
+  if (ext === "pdf")                return "application/pdf";
+  if (ext === "png")                return "image/png";
+  if (ext === "jpg" || ext === "jpeg") return "image/jpeg";
+  return mimeType;
 }
 
 const pagerBtn =
   "bg-transparent border border-(--color-border) w-[26px] h-[26px] rounded-[2px] inline-grid place-items-center cursor-pointer text-(--color-foreground) transition-[border-color,color] duration-[0.18s] hover:border-(--color-primary) hover:text-(--color-primary) disabled:opacity-35 disabled:cursor-default";
 
-export function WorksheetPanel({ files, pageIndex, setPageIndex }: WorksheetPanelProps) {
+export function WorksheetPanel({ files, pageIndex, setPageIndex, fileUrl, mimeType }: WorksheetPanelProps) {
   if (files.length === 0) {
     return (
       <section className="relative bg-(--color-surface) border border-(--color-border) p-[18px] pb-[16px]" aria-label="Worksheet">
@@ -56,7 +67,21 @@ export function WorksheetPanel({ files, pageIndex, setPageIndex }: WorksheetPane
       </div>
 
       <div className="relative aspect-[210/297] bg-(--color-background) border border-(--color-border) rounded-[2px] overflow-hidden mb-[12px] min-[880px]:flex-1 min-[880px]:aspect-auto min-[880px]:min-h-0 min-[880px]:mb-[8px]">
-        <WorksheetThumb pageIndex={pageIndex} />
+        {fileUrl && resolvedMimeType(mimeType, currentFile.fileName).startsWith("image/") ? (
+          <img
+            src={fileUrl}
+            alt={currentFile.fileName}
+            className="w-full h-full object-contain"
+          />
+        ) : fileUrl && resolvedMimeType(mimeType, currentFile.fileName) === "application/pdf" ? (
+          <embed
+            src={fileUrl}
+            type="application/pdf"
+            className="w-full h-full"
+          />
+        ) : (
+          <WorksheetThumb pageIndex={pageIndex} />
+        )}
       </div>
 
       <div className="flex items-center gap-[10px] font-code text-[10px] tracking-[0.14em] uppercase text-(--color-muted)">

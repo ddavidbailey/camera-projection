@@ -60,15 +60,24 @@ export function DashboardClient() {
         : [];
 
       const dropboxFiles: Worksheet[] = dropboxRes.status === "fulfilled"
-        ? (dropboxRes.value.files as DropboxFile[]).map((f) => ({
-            id:       f.id,
-            name:     f.name,
-            path:     f.pathDisplay,
-            pages:    1,
-            source:   "dropbox" as const,
-            modified: relativeTime(f.serverModified),
-            thumb:    "lines" as const,
-          }))
+        ? (dropboxRes.value.files as DropboxFile[]).map((f) => {
+            const ext = f.name.split(".").pop()?.toLowerCase();
+            const mimeType =
+              ext === "pdf"                  ? "application/pdf" :
+              ext === "png"                  ? "image/png" :
+              (ext === "jpg" || ext === "jpeg") ? "image/jpeg" :
+              "application/octet-stream";
+            return {
+              id:       f.id,
+              name:     f.name,
+              path:     f.pathDisplay,
+              pages:    1,
+              source:   "dropbox" as const,
+              modified: relativeTime(f.serverModified),
+              thumb:    mimeType.startsWith("image/") ? "figure" as const : "lines" as const,
+              mimeType,
+            };
+          })
         : [];
 
       setAllRows([...driveFiles, ...dropboxFiles]);
