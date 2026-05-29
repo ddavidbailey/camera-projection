@@ -66,6 +66,131 @@ async function loadMediaPipe(): Promise<HandLandmarker | null> {
   }
 }
 
+// ── Pure helper functions ────────────────────────────────────────────────────
+
+/** Guide zone ROI in video-native pixels (centred, A4 aspect ratio, 75 % width). */
+function computeGuideZoneRect(videoW: number, videoH: number) {
+  const w = Math.round(videoW * 0.75);
+  const h = Math.round(w * Math.SQRT2); // A4
+  const x = Math.round((videoW - w) / 2);
+  const y = Math.round((videoH - h) / 2);
+  return { x, y, w, h };
+}
+
+/** Map corners from video-native pixels to display pixels (object-fit: cover). */
+function videoToDisplay(pts: Corner[], video: HTMLVideoElement): Corner[] {
+  const dw    = video.clientWidth;
+  const dh    = video.clientHeight;
+  const scale = Math.max(dw / video.videoWidth, dh / video.videoHeight);
+  const ox    = (dw - video.videoWidth  * scale) / 2;
+  const oy    = (dh - video.videoHeight * scale) / 2;
+  return pts.map(([x, y]) => [Math.round(x * scale + ox), Math.round(y * scale + oy)]);
+}
+
+/** Order 4 corners as TL, TR, BR, BL. */
+function orderCorners(pts: Corner[]): Corners {
+  const sums  = pts.map(([x, y]) => x + y);
+  const diffs = pts.map(([x, y]) => x - y);
+  const tl = pts[sums.indexOf(Math.min(...sums))];
+  const br = pts[sums.indexOf(Math.max(...sums))];
+  const tr = pts[diffs.indexOf(Math.min(...diffs))];
+  const bl = pts[diffs.indexOf(Math.max(...diffs))];
+  return [tl, tr, br, bl];
+}
+
+/** Zero out hand pixels using MediaPipe landmarks (composite: destination-out). */
+function maskHands(
+  ctx: CanvasRenderingContext2D,
+  landmarks: { x: number; y: number }[][],
+  canvasW: number,
+  canvasH: number,
+) {
+  ctx.save();
+  ctx.globalCompositeOperation = "destination-out";
+  ctx.fillStyle = "black";
+  for (const hand of landmarks) {
+    ctx.beginPath();
+    hand.forEach(({ x, y }, i) => {
+      i === 0
+        ? ctx.moveTo(x * canvasW, y * canvasH)
+        : ctx.lineTo(x * canvasW, y * canvasH);
+    });
+    ctx.closePath();
+    ctx.fill();
+  }
+  ctx.restore();
+}
+
+const MIN_QUAD_AREA = 15_000; // square video-pixels — rejects tiny false positives
+
+/** OpenCV quad detection within the ROI. Returns 4 corners in full-frame video-pixel space, or null. */
+function detectQuad(
+  canvas: HTMLCanvasElement,
+  roi: { x: number; y: number; w: number; h: number },
+): Corner[] | null {
+  const cv  = window.cv;
+  const src = cv.imread(canvas);
+  const roiMat = src.roi(new cv.Rect(roi.x, roi.y, roi.w, roi.h));
+
+  const gray    = new cv.Mat();
+  const blurred = new cv.Mat();
+  const thDst   = new cv.Mat();
+  const edges   = new cv.Mat();
+
+  cv.cvtColor(roiMat, gray, cv.COLOR_RGBA2GRAY);
+  cv.GaussianBlur(gray, blurred, new cv.Size(5, 5), 0);
+  const otsu = cv.threshold(blurred, thDst, 0, 255, cv.THRESH_BINARY + cv.THRESH_OTSU);
+  cv.Canny(blurred, edges, otsu * 0.5, otsu);
+
+  const contours  = new cv.MatVector();
+  const hierarchy = new cv.Mat();
+  cv.findContours(edges, contours, hierarchy, cv.RETR_EXTERNAL, cv.CHAIN_APPROX_SIMPLE);
+
+  let best: Corner[] | null = null;
+  let bestArea = 0;
+
+  for (let i = 0; i < contours.size(); i++) {
+    const c    = contours.get(i);
+    const peri = cv.arcLength(c, true);
+    const approx = new cv.Mat();
+    cv.approxPolyDP(c, approx, 0.02 * peri, true);
+
+    if (approx.rows === 4) {
+      const area = Math.abs(cv.contourArea(approx, false));
+      if (area > MIN_QUAD_AREA && area > bestArea) {
+        bestArea = area;
+        best = [];
+        for (let j = 0; j < 4; j++) {
+          best.push([approx.intAt(j, 0) + roi.x, approx.intAt(j, 1) + roi.y]);
+        }
+      }
+    }
+    approx.delete();
+    c.delete();
+  }
+
+  [src, roiMat, gray, blurred, thDst, edges, contours, hierarchy].forEach((m) => m.delete());
+  return best;
+}
+
+const STABILITY_FRAMES    = 8;
+const STABILITY_THRESHOLD = 10; // px
+const RECENTER_FRAMES     = 30;
+
+/** Returns true when the last STABILITY_FRAMES detections are all within STABILITY_THRESHOLD px. */
+function cornersStable(buf: Corners[]): boolean {
+  if (buf.length < STABILITY_FRAMES) return false;
+  const ref = buf[0];
+  return buf.every((c) =>
+    c.every(([x, y], i) =>
+      Math.abs(x - ref[i][0]) <= STABILITY_THRESHOLD &&
+      Math.abs(y - ref[i][1]) <= STABILITY_THRESHOLD
+    )
+  );
+}
+
+// ── Exported types ───────────────────────────────────────────────────────────
+
 export type DetectionStatus = "searching" | "locked" | "recenter" | "unavailable";
 export type Corner  = [number, number]; // [x, y] in display pixels
 export type Corners = [Corner, Corner, Corner, Corner]; // TL, TR, BR, BL
