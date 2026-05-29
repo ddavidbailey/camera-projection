@@ -4,6 +4,8 @@ import { useEffect, useRef } from "react";
 import type { MutableRefObject, RefObject } from "react";
 import { ProjectionOverlay } from "./ProjectionOverlay";
 import { CropMark } from "./CropMark";
+import { GuideZone } from "./GuideZone";
+import { WorksheetCanvas } from "./WorksheetCanvas";
 import type { DetectionStatus, Corners } from "@/hooks/usePaperDetection";
 
 export type CameraState = "idle" | "live" | "denied";
@@ -107,8 +109,13 @@ export function CameraView({
         }}
       />
 
-      {/* Overlay — only while searching for paper */}
-      {cameraState === "live" && !(detectionStatus === "locked") && (
+      {/* Guide zone — always visible while live */}
+      {cameraState === "live" && (
+        <GuideZone status={detectionStatus} />
+      )}
+
+      {/* Pre-lock search animation — only while searching */}
+      {cameraState === "live" && detectionStatus === "searching" && (
         <svg
           className="absolute inset-0 w-full h-full pointer-events-none z-[3]"
           viewBox="0 0 400 300"
@@ -119,6 +126,16 @@ export function CameraView({
             <ProjectionOverlay opacity={overlayOpacity} pageIndex={pageIndex} />
           </g>
         </svg>
+      )}
+
+      {/* Worksheet projection canvas */}
+      {cameraState === "live" && (
+        <WorksheetCanvas
+          cornersRef={_cornersRef}
+          fileUrl={_fileUrl ?? null}
+          flipped={flipped}
+          active={cameraState === "live"}
+        />
       )}
 
       {cameraState === "live" && (
@@ -136,24 +153,6 @@ export function CameraView({
               {detectionStatus === "locked" ? "Paper locked" : "Searching"}
             </span>
           </div>
-
-          {/* "Center paper" prompt */}
-          {!(detectionStatus === "locked") && (
-            <div className="absolute top-[64px] left-1/2 -translate-x-1/2 z-[4] text-center pointer-events-none max-w-[76%] px-[18px] py-[10px]">
-              <div className="inline-flex items-center gap-[8px] font-code text-[10px] tracking-[0.18em] uppercase text-[rgba(248,242,228,0.7)] px-[10px] py-[4px] border border-[rgba(248,242,228,0.18)] rounded-full bg-[rgba(0,0,0,0.32)] backdrop-blur-[6px] mb-[12px]">
-                <span className="w-[5px] h-[5px] rounded-full bg-(--color-primary) shadow-[0_0_0_3px_color-mix(in_oklab,var(--color-primary),transparent_75%)] animate-auth-pulse" />
-                <span>no paper yet</span>
-              </div>
-              <h3 className="font-heading font-normal text-[28px] leading-[1.1] tracking-[-0.01em] m-0 mb-[6px] text-(--color-surface) [text-shadow:0_1px_6px_rgba(0,0,0,0.45)] text-balance">
-                Center a{" "}
-                <em className="italic text-(--color-primary)">sheet of paper</em>{" "}
-                on screen.
-              </h3>
-              <p className="font-code text-[10.5px] tracking-[0.14em] uppercase text-[rgba(248,242,228,0.6)] m-0">
-                Any blank A4 will do. We&apos;ll lock onto its corners automatically.
-              </p>
-            </div>
-          )}
 
           {/* Bottom HUD */}
           <div className="absolute left-[18px] right-[18px] bottom-[14px] flex items-center z-[5]">
