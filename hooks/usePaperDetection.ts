@@ -214,6 +214,12 @@ export function usePaperDetection({ videoRef, cameraActive }: Options): UsePaper
   const mpRef       = useRef<HandLandmarker | null>(null);
   const cvLoadedRef = useRef(false);
 
+  const stabBufRef    = useRef<Corners[]>([]);
+  const framesLostRef = useRef(0);
+  const everLockedRef = useRef(false);
+  const lastMpTimeRef = useRef(-1);
+  const frameCountRef = useRef(0); // for every-other-frame perf mode
+
   useEffect(() => {
     if (!cameraActive) return;
     let cancelled = false;
@@ -229,8 +235,83 @@ export function usePaperDetection({ videoRef, cameraActive }: Options): UsePaper
     return () => { cancelled = true; };
   }, [cameraActive]);
 
-  // videoRef consumed in Task 7's RAF loop effect.
-  void videoRef;
+  useEffect(() => {
+    if (!cameraActive) return;
+    let rafId = 0;
+
+    const detCanvas = document.createElement("canvas");
+    const detCtx    = detCanvas.getContext("2d", { willReadFrequently: true })!;
+    let lastNow     = 0;
+
+    function tick(now: number) {
+      rafId = requestAnimationFrame(tick);
+      if (!cvLoadedRef.current) return;
+
+      const video = videoRef.current;
+      if (!video || video.readyState < 2) return;
+
+      const vw = video.videoWidth;
+      const vh = video.videoHeight;
+      if (!vw || !vh) return;
+
+      // Performance: skip every other frame if we're struggling (<15fps ~= delta>66ms)
+      frameCountRef.current += 1;
+      const delta = now - (lastNow > 0 ? lastNow : now - 33);
+      lastNow = now;
+      const lowFps = delta > 66;
+      if (lowFps && frameCountRef.current % 2 !== 0) return;
+
+      // Resize detection canvas if needed
+      if (detCanvas.width !== vw || detCanvas.height !== vh) {
+        detCanvas.width  = vw;
+        detCanvas.height = vh;
+      }
+
+      detCtx.drawImage(video, 0, 0, vw, vh);
+
+      // MediaPipe hand masking (every frame regardless of lowFps)
+      const mp = mpRef.current;
+      if (mp && now !== lastMpTimeRef.current) {
+        lastMpTimeRef.current = now;
+        const results = mp.detectForVideo(video, now);
+        if (results.landmarks.length > 0) {
+          maskHands(detCtx, results.landmarks, vw, vh);
+        }
+      }
+
+      // OpenCV quad detection within ROI
+      const roi  = computeGuideZoneRect(vw, vh);
+      const quad = detectQuad(detCanvas, roi);
+
+      if (quad) {
+        framesLostRef.current = 0;
+        const ordered  = orderCorners(quad);
+        const display  = videoToDisplay(ordered, video) as Corners;
+        cornersRef.current = display;
+
+        const buf = stabBufRef.current;
+        buf.unshift(display);
+        if (buf.length > STABILITY_FRAMES) buf.pop();
+
+        if (cornersStable(buf)) {
+          everLockedRef.current = true;
+          setStatus((s) => s !== "locked" ? "locked" : s);
+        }
+      } else {
+        stabBufRef.current = [];
+        framesLostRef.current += 1;
+
+        if (framesLostRef.current > RECENTER_FRAMES) {
+          const next = everLockedRef.current ? "recenter" : "searching";
+          setStatus((s) => s !== next ? next : s);
+          cornersRef.current = null;
+        }
+      }
+    }
+
+    rafId = requestAnimationFrame(tick);
+    return () => { cancelAnimationFrame(rafId); };
+  }, [cameraActive, videoRef, cornersRef]);
 
   return { cornersRef, status };
 }
