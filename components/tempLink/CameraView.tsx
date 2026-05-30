@@ -22,7 +22,9 @@ export interface CameraViewProps {
   onRequest: () => void;
   torch: boolean;
   flipped: boolean;
+  flippedV: boolean;
   fileUrl?: string | null;
+  mimeType?: string;
 }
 
 export function CameraView({
@@ -30,8 +32,9 @@ export function CameraView({
   zoom, brightness, overlayOpacity,
   detectionStatus, cornersRef: _cornersRef, pageIndex,
   cameraState, onRequest,
-  torch, flipped,
+  torch, flipped, flippedV,
   fileUrl: _fileUrl,
+  mimeType: _mimeType = "",
 }: CameraViewProps) {
   const streamRef = useRef<MediaStream | null>(null);
 
@@ -74,7 +77,7 @@ export function CameraView({
   }, [torch, cameraState]);
 
   const filter    = `brightness(${brightness}) contrast(${1 + (brightness - 1) * 0.4})`;
-  const transform = `scale(${zoom})${flipped ? " scaleX(-1)" : ""}`;
+  const transform = `scale(${zoom})${flipped ? " scaleX(-1)" : ""}${flippedV ? " scaleY(-1)" : ""}`;
 
   return (
     <div
@@ -133,8 +136,13 @@ export function CameraView({
         <WorksheetCanvas
           cornersRef={_cornersRef}
           fileUrl={_fileUrl ?? null}
+          mimeType={_mimeType}
           flipped={flipped}
+          flippedV={flippedV}
           active={cameraState === "live"}
+          locked={detectionStatus === "locked"}
+          overlayOpacity={overlayOpacity}
+          zoom={zoom}
         />
       )}
 

@@ -21,6 +21,7 @@ export function ViewClient({ token, files }: ViewClientProps) {
   const [overlayOpacity, setOverlayOpacity] = useState(0.85);
   const [torch, setTorch] = useState(false);
   const [flipped, setFlipped] = useState(false);
+  const [flippedV, setFlippedV] = useState(false);
   const [pageIndex, setPageIndex] = useState(0);
   const [fileUrls, setFileUrls] = useState<(string | null)[]>(() => new Array(files.length).fill(null));
   const blobUrlsRef = useRef<string[]>([]);
@@ -170,7 +171,9 @@ export function ViewClient({ token, files }: ViewClientProps) {
               onRequest={requestCamera}
               torch={torch}
               flipped={flipped}
+              flippedV={flippedV}
               fileUrl={proxyUrl}
+              mimeType={files[clampedPageIndex]?.mimeType ?? ""}
             />
 
             <aside className="flex flex-col gap-[14px] min-[880px]:min-h-0 min-[880px]:h-full min-[880px]:overflow-hidden">
@@ -192,6 +195,8 @@ export function ViewClient({ token, files }: ViewClientProps) {
                 setTorch={setTorch}
                 flipped={flipped}
                 setFlipped={setFlipped}
+                flippedV={flippedV}
+                setFlippedV={setFlippedV}
               />
             </aside>
           </div>

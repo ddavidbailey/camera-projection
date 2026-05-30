@@ -77,10 +77,17 @@ async function loadMediaPipe(): Promise<HandLandmarker | null> {
 
 // ── Pure helper functions ────────────────────────────────────────────────────
 
-/** Guide zone ROI in video-native pixels (centred, A4 aspect ratio, 75 % width). */
+/** Guide zone ROI in video-native pixels (centred, A4 aspect ratio).
+ *  Prefers 75 % of width but clamps height to 90 % of the frame so the rect
+ *  never overflows a landscape camera (which is all normal webcams). */
 function computeGuideZoneRect(videoW: number, videoH: number) {
-  const w = Math.round(videoW * 0.75);
-  const h = Math.round(w * Math.SQRT2); // A4
+  const A4 = Math.SQRT2; // height / width for A4 portrait
+  let w = Math.round(videoW * 0.75);
+  let h = Math.round(w * A4);
+  if (h > Math.round(videoH * 0.9)) {
+    h = Math.round(videoH * 0.9);
+    w = Math.round(h / A4);
+  }
   const x = Math.round((videoW - w) / 2);
   const y = Math.round((videoH - h) / 2);
   return { x, y, w, h };
@@ -102,12 +109,45 @@ function orderCorners(pts: Corner[]): Corners {
   const diffs = pts.map(([x, y]) => x - y);
   const tl = pts[sums.indexOf(Math.min(...sums))];
   const br = pts[sums.indexOf(Math.max(...sums))];
-  const tr = pts[diffs.indexOf(Math.min(...diffs))];
-  const bl = pts[diffs.indexOf(Math.max(...diffs))];
+  const tr = pts[diffs.indexOf(Math.max(...diffs))];
+  const bl = pts[diffs.indexOf(Math.min(...diffs))];
   return [tl, tr, br, bl];
 }
 
-/** Zero out hand pixels using MediaPipe landmarks (composite: destination-out). */
+/** Andrew's monotone-chain convex hull (O(n log n)). Returns hull in CCW order. */
+function convexHull(pts: { x: number; y: number }[]): { x: number; y: number }[] {
+  if (pts.length < 3) return pts;
+  const s = [...pts].sort((a, b) => a.x !== b.x ? a.x - b.x : a.y - b.y);
+  const cross = (o: typeof pts[0], a: typeof pts[0], b: typeof pts[0]) =>
+    (a.x - o.x) * (b.y - o.y) - (a.y - o.y) * (b.x - o.x);
+
+  const lower: typeof pts = [];
+  for (const p of s) {
+    while (lower.length >= 2 && cross(lower[lower.length - 2], lower[lower.length - 1], p) <= 0)
+      lower.pop();
+    lower.push(p);
+  }
+  const upper: typeof pts = [];
+  for (let i = s.length - 1; i >= 0; i--) {
+    const p = s[i];
+    while (upper.length >= 2 && cross(upper[upper.length - 2], upper[upper.length - 1], p) <= 0)
+      upper.pop();
+    upper.push(p);
+  }
+  lower.pop();
+  upper.pop();
+  return lower.concat(upper);
+}
+
+/**
+ * Erase hand + arm pixels from the detection canvas.
+ *
+ * Two shapes per hand:
+ *  1. Convex hull of the 21 landmarks — covers the hand itself.
+ *  2. A rectangle strip extending from the wrist to the frame edge — covers the arm.
+ *
+ * Using destination-out so erased pixels become transparent (OpenCV reads them as 0).
+ */
 function maskHands(
   ctx: CanvasRenderingContext2D,
   landmarks: { x: number; y: number }[][],
@@ -117,16 +157,50 @@ function maskHands(
   ctx.save();
   ctx.globalCompositeOperation = "destination-out";
   ctx.fillStyle = "black";
+
   for (const hand of landmarks) {
+    // 1. Convex hull over all 21 hand landmarks
+    const hull = convexHull(hand);
     ctx.beginPath();
-    hand.forEach(({ x, y }, i) => {
+    hull.forEach(({ x, y }, i) => {
       i === 0
         ? ctx.moveTo(x * canvasW, y * canvasH)
         : ctx.lineTo(x * canvasW, y * canvasH);
     });
     ctx.closePath();
     ctx.fill();
+
+    // 2. Arm strip: from wrist (landmark 0) toward the frame edge.
+    //    Direction = wrist away from middle-finger MCP (landmark 9).
+    const wrist = hand[0];
+    const midMcp = hand[9];
+    const dx = wrist.x - midMcp.x;
+    const dy = wrist.y - midMcp.y;
+    const len = Math.sqrt(dx * dx + dy * dy) || 1;
+    const ax = dx / len, ay = dy / len; // unit vector along arm
+
+    // Half-width = index MCP (5) → pinky MCP (17) distance, + 30 % padding
+    const hw = Math.sqrt(
+      (hand[5].x - hand[17].x) ** 2 + (hand[5].y - hand[17].y) ** 2,
+    ) / 2 * 1.3;
+    const px = -ay, py = ax; // perpendicular to arm
+
+    // Wrist edge of the strip (in 0-1 normalised space)
+    const w0x = wrist.x + px * hw, w0y = wrist.y + py * hw;
+    const w1x = wrist.x - px * hw, w1y = wrist.y - py * hw;
+    // Far edge: 2× frame lengths off-screen — guaranteed to reach the boundary
+    const f0x = w0x + ax * 2,      f0y = w0y + ay * 2;
+    const f1x = w1x + ax * 2,      f1y = w1y + ay * 2;
+
+    ctx.beginPath();
+    ctx.moveTo(w0x * canvasW, w0y * canvasH);
+    ctx.lineTo(w1x * canvasW, w1y * canvasH);
+    ctx.lineTo(f1x * canvasW, f1y * canvasH);
+    ctx.lineTo(f0x * canvasW, f0y * canvasH);
+    ctx.closePath();
+    ctx.fill();
   }
+
   ctx.restore();
 }
 
@@ -170,7 +244,8 @@ function detectQuad(
         bestArea = area;
         best = [];
         for (let j = 0; j < 4; j++) {
-          best.push([approx.intAt(j, 0) + roi.x, approx.intAt(j, 1) + roi.y]);
+          // approxPolyDP output is CV_32SC2: data is interleaved [x0,y0,x1,y1,...]
+          best.push([approx.data32S[j * 2] + roi.x, approx.data32S[j * 2 + 1] + roi.y]);
         }
       }
     }
@@ -279,18 +354,34 @@ export function usePaperDetection({ videoRef, cameraActive }: Options): UsePaper
       detCtx.drawImage(video, 0, 0, vw, vh);
 
       // MediaPipe hand masking (every frame regardless of lowFps)
+      let handsPresent = false;
       const mp = mpRef.current;
       if (mp && now !== lastMpTimeRef.current) {
         lastMpTimeRef.current = now;
         const results = mp.detectForVideo(video, now);
         if (results.landmarks.length > 0) {
+          handsPresent = true;
           maskHands(detCtx, results.landmarks, vw, vh);
         }
       }
 
+      // When the paper is already locked and hands are in frame, skip OpenCV
+      // entirely. The mask boundary is a hard edge that Canny would treat as a
+      // new contour — running detection would corrupt the stability buffer and
+      // break the lock. Resetting framesLost keeps the lock alive while writing.
+      if (handsPresent && everLockedRef.current) {
+        framesLostRef.current = 0;
+        return;
+      }
+
       // OpenCV quad detection within ROI
       const roi  = computeGuideZoneRect(vw, vh);
-      const quad = detectQuad(detCanvas, roi);
+      let quad: Corner[] | null = null;
+      try {
+        quad = detectQuad(detCanvas, roi);
+      } catch (err) {
+        console.warn("[usePaperDetection] detectQuad error:", err);
+      }
 
       if (quad) {
         framesLostRef.current = 0;
