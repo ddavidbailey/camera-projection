@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useMode } from "./AuthProvider";
 import { Logomark } from "./icons";
 
@@ -16,12 +17,15 @@ export function AuthAside() {
     >
       {/* Brand row */}
       <div className="flex justify-between items-center gap-4">
-        <div className="flex items-center gap-2.5 text-(--color-foreground)">
+        <Link
+          href="/"
+          className="inline-flex items-center gap-2.5 no-underline text-(--color-foreground) hover:opacity-90 transition-opacity"
+        >
           <Logomark size={26} />
           <span className="font-heading text-[22px] tracking-[-0.01em]">
             Tracelight
           </span>
-        </div>
+        </Link>
         <span className="inline-flex items-center gap-1.5 font-code text-[10px] uppercase tracking-[0.08em] text-(--color-muted) whitespace-nowrap">
           <span className="w-1.5 h-1.5 rounded-full bg-(--color-primary) shadow-[0_0_0_3px_color-mix(in_oklab,var(--color-primary),transparent_80%)]" />
           v0.1 · beta
