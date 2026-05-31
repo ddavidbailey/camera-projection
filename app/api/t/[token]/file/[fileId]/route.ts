@@ -55,11 +55,22 @@ export async function GET(
         return new Response("Unknown provider", { status: 400 });
       }
 
+      // Override application/octet-stream with a type derived from the file extension
+      // so browsers render the file inline rather than downloading it.
+      const ext = fileName.split(".").pop()?.toLowerCase();
+      const effectiveContentType =
+        !contentType || contentType === "application/octet-stream"
+          ? ext === "pdf"                     ? "application/pdf"
+          : ext === "png"                     ? "image/png"
+          : ext === "jpg" || ext === "jpeg"   ? "image/jpeg"
+          : contentType
+          : contentType;
+
       // RFC 5987-compliant Content-Disposition: ASCII-safe fallback + UTF-8 encoded name
       const safeName = fileName.replace(/[^\w. ()-]/g, "_");
       return new Response(stream, {
         headers: {
-          "Content-Type": contentType,
+          "Content-Type": effectiveContentType,
           "Content-Disposition": `inline; filename="${safeName}"; filename*=UTF-8''${encodeURIComponent(fileName)}`,
           "Cache-Control": "private, no-store",
         },

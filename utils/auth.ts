@@ -29,6 +29,7 @@ export const auth = betterAuth({
       clientId: process.env.DROPBOX_CLIENT_ID as string,
       clientSecret: process.env.DROPBOX_CLIENT_SECRET as string,
       scope: ["account_info.read", "files.metadata.read", "files.content.read"],
+      accessType: "offline",
     },
     google: {
       clientId: process.env.GOOGLE_CLIENT_ID as string,

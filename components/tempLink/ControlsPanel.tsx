@@ -54,10 +54,18 @@ function IconLightning() {
   );
 }
 
-function IconFlip() {
+function IconFlipH() {
   return (
     <svg width="11" height="11" viewBox="0 0 12 12" fill="none">
       <path d="M6 1v10M2 3.5L4.5 6 2 8.5M10 3.5L7.5 6 10 8.5" stroke="currentColor" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
+function IconFlipV() {
+  return (
+    <svg width="11" height="11" viewBox="0 0 12 12" fill="none">
+      <path d="M1 6h10M3.5 2L6 4.5 8.5 2M3.5 10L6 7.5 8.5 10" stroke="currentColor" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round" />
     </svg>
   );
 }
@@ -74,6 +82,8 @@ export interface ControlsPanelProps {
   setTorch: (v: boolean) => void;
   flipped: boolean;
   setFlipped: (v: boolean) => void;
+  flippedV: boolean;
+  setFlippedV: (v: boolean) => void;
 }
 
 const ZOOM_PRESETS = [1, 1.5, 2, 3];
@@ -90,20 +100,21 @@ export function ControlsPanel({
   overlayOpacity, setOverlayOpacity,
   torch, setTorch,
   flipped, setFlipped,
+  flippedV, setFlippedV,
 }: ControlsPanelProps) {
   return (
-    <section className="relative bg-(--color-surface) border border-(--color-border) p-[18px] pb-[16px]" aria-label="Camera controls">
+    <section className="relative bg-(--color-surface) border border-(--color-border) p-[18px] pb-[16px] min-[880px]:flex-1 min-[880px]:flex min-[880px]:flex-col min-[880px]:min-h-0 min-[880px]:overflow-hidden min-[880px]:p-[14px] min-[880px]:pb-[12px]" aria-label="Camera controls">
       <CropMark position="tl" />
       <CropMark position="tr" />
       <CropMark position="bl" />
       <CropMark position="br" />
 
-      <div className="flex items-center gap-[10px] mb-[14px]">
+      <div className="flex items-center gap-[10px] mb-[14px] min-[880px]:mb-[10px]">
         <span className="font-code text-[10px] tracking-[0.16em] uppercase text-(--color-primary)">02</span>
         <span className="font-code text-[10px] tracking-[0.16em] uppercase text-(--color-muted)">Camera</span>
       </div>
 
-      <div className="flex flex-col gap-[14px]">
+      <div className="flex flex-col gap-[14px] min-[880px]:gap-[10px]">
         <Slider
           label="Zoom"
           value={zoom}
@@ -142,7 +153,7 @@ export function ControlsPanel({
           format={(v) => `${Math.round(v * 100)}%`}
         />
 
-        <div className="grid grid-cols-2 gap-[8px]">
+        <div className="grid grid-cols-3 gap-[8px]">
           <button
             type="button"
             className={`border rounded-[2px] px-[8px] py-[6px] font-code text-[8.5px] tracking-[0.12em] uppercase cursor-pointer inline-flex items-center justify-center gap-[5px] transition-[border-color,color,background] duration-[0.18s] ${toggleClass(torch)}`}
@@ -156,8 +167,16 @@ export function ControlsPanel({
             className={`border rounded-[2px] px-[8px] py-[6px] font-code text-[8.5px] tracking-[0.12em] uppercase cursor-pointer inline-flex items-center justify-center gap-[5px] transition-[border-color,color,background] duration-[0.18s] ${toggleClass(flipped)}`}
             onClick={() => setFlipped(!flipped)}
           >
-            <IconFlip />
-            Flip
+            <IconFlipH />
+            Flip H
+          </button>
+          <button
+            type="button"
+            className={`border rounded-[2px] px-[8px] py-[6px] font-code text-[8.5px] tracking-[0.12em] uppercase cursor-pointer inline-flex items-center justify-center gap-[5px] transition-[border-color,color,background] duration-[0.18s] ${toggleClass(flippedV)}`}
+            onClick={() => setFlippedV(!flippedV)}
+          >
+            <IconFlipV />
+            Flip V
           </button>
         </div>
       </div>

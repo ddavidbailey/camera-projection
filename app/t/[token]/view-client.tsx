@@ -1,12 +1,13 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import Link from "next/link";
 import { Logomark } from "@/components/tempLink/Logomark";
 import { CameraView } from "@/components/tempLink/CameraView";
 import { ControlsPanel } from "@/components/tempLink/ControlsPanel";
 import { WorksheetPanel, type ShareLinkFile } from "@/components/tempLink/WorksheetPanel";
 import type { CameraState } from "@/components/tempLink/CameraView";
+import { usePaperDetection } from "@/hooks/usePaperDetection";
 
 interface ViewClientProps {
   token: string;
@@ -20,7 +21,10 @@ export function ViewClient({ token, files }: ViewClientProps) {
   const [overlayOpacity, setOverlayOpacity] = useState(0.85);
   const [torch, setTorch] = useState(false);
   const [flipped, setFlipped] = useState(false);
+  const [flippedV, setFlippedV] = useState(false);
   const [pageIndex, setPageIndex] = useState(0);
+  const [fileUrls, setFileUrls] = useState<(string | null)[]>(() => new Array(files.length).fill(null));
+  const blobUrlsRef = useRef<string[]>([]);
 
   // Check existing camera permission on mount — auto-start if already granted,
   // jump to denied state if blocked. Safari may not support querying "camera",
@@ -56,14 +60,43 @@ export function ViewClient({ token, files }: ViewClientProps) {
     };
   }, []);
 
-  // Paper detection is simulated — real detection will wire in OpenCV.js
-  const paperDetected = false;
+  // Fetch all files once on mount and store as blob URLs so switching
+  // worksheets never triggers additional API calls.
+  useEffect(() => {
+    if (files.length === 0) return;
+    const ac = new AbortController();
+
+    files.forEach((file, i) => {
+      fetch(`/api/t/${token}/file/${file.fileId}`, { signal: ac.signal })
+        .then((res) => (res.ok ? res.blob() : Promise.reject()))
+        .then((blob) => {
+          const url = URL.createObjectURL(blob);
+          blobUrlsRef.current[i] = url;
+          setFileUrls((prev) => {
+            const next = [...prev];
+            next[i] = url;
+            return next;
+          });
+        })
+        .catch(() => {/* aborted or failed — slot stays null */});
+    });
+
+    return () => {
+      ac.abort();
+      blobUrlsRef.current.forEach((url) => URL.revokeObjectURL(url));
+      blobUrlsRef.current = [];
+    };
+  }, [token, files]);
+
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const { cornersRef, status: detectionStatus } = usePaperDetection({
+    videoRef,
+    cameraActive: cameraState === "live",
+  });
 
   const clampedPageIndex = Math.min(pageIndex, Math.max(0, files.length - 1));
 
-  const proxyUrl = files[clampedPageIndex]
-    ? `/api/t/${token}/file/${files[clampedPageIndex].fileId}`
-    : null;
+  const proxyUrl = fileUrls[clampedPageIndex] ?? null;
 
   const requestCamera = useCallback(async () => {
     try {
@@ -127,23 +160,29 @@ export function ViewClient({ token, files }: ViewClientProps) {
         <div className="w-full max-w-[1480px] mx-auto px-8 max-[720px]:px-[18px] min-[880px]:flex-1 min-[880px]:min-h-0 min-[880px]:flex min-[880px]:flex-col">
           <div className="grid grid-cols-[minmax(0,1fr)_260px] gap-[22px] items-start max-[880px]:grid-cols-1 min-[880px]:flex-1 min-[880px]:min-h-0 min-[880px]:items-stretch">
             <CameraView
+              videoRef={videoRef}
               zoom={zoom}
               brightness={brightness}
               overlayOpacity={overlayOpacity}
-              paperDetected={paperDetected}
+              detectionStatus={detectionStatus}
+              cornersRef={cornersRef}
               pageIndex={clampedPageIndex}
               cameraState={cameraState}
               onRequest={requestCamera}
               torch={torch}
               flipped={flipped}
+              flippedV={flippedV}
               fileUrl={proxyUrl}
+              mimeType={files[clampedPageIndex]?.mimeType ?? ""}
             />
 
-            <aside className="flex flex-col gap-[14px] min-[880px]:min-h-0 min-[880px]:overflow-y-auto">
+            <aside className="flex flex-col gap-[14px] min-[880px]:min-h-0 min-[880px]:h-full min-[880px]:overflow-hidden">
               <WorksheetPanel
                 files={files}
                 pageIndex={clampedPageIndex}
                 setPageIndex={setPageIndex}
+                fileUrl={proxyUrl}
+                mimeType={files[clampedPageIndex]?.mimeType ?? ""}
               />
               <ControlsPanel
                 zoom={zoom}
@@ -156,6 +195,8 @@ export function ViewClient({ token, files }: ViewClientProps) {
                 setTorch={setTorch}
                 flipped={flipped}
                 setFlipped={setFlipped}
+                flippedV={flippedV}
+                setFlippedV={setFlippedV}
               />
             </aside>
           </div>
