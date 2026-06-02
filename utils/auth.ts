@@ -28,7 +28,7 @@ export const auth = betterAuth({
     dropbox: {
       clientId: process.env.DROPBOX_CLIENT_ID as string,
       clientSecret: process.env.DROPBOX_CLIENT_SECRET as string,
-      scope: ["account_info.read", "files.metadata.read", "files.content.read"],
+      scope: ["account_info.read", "files.metadata.read", "files.metadata.write", "files.content.read", "files.content.write"],
       accessType: "offline",
     },
     google: {
@@ -38,7 +38,7 @@ export const auth = betterAuth({
         "openid",
         "email",
         "profile",
-        "https://www.googleapis.com/auth/drive.readonly",
+        "https://www.googleapis.com/auth/drive",
       ],
       accessType: "offline",
       prompt: "consent",

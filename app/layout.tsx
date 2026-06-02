@@ -54,9 +54,9 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${geistSans.variable} ${geistMono.variable} ${instrumentSerif.variable} ${interTight.variable} ${jetbrainsMono.variable} h-full antialiased`}
+      className={`${geistSans.variable} ${geistMono.variable} ${instrumentSerif.variable} ${interTight.variable} ${jetbrainsMono.variable} antialiased`}
     >
-      <body className="min-h-full flex flex-col font-ui antialiased [text-rendering:optimizeLegibility]">
+      <body className="min-h-dvh flex flex-col font-ui antialiased [text-rendering:optimizeLegibility]">
         <SmoothScroll />
         {children}
       </body>

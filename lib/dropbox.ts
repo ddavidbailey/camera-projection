@@ -88,6 +88,46 @@ export async function listDropboxFiles(userId: string): Promise<DropboxFile[]> {
     }));
 }
 
+async function getDropboxToken(userId: string): Promise<string> {
+  const db = getPool();
+  const { rows } = await db.query(
+    `select "accessToken", "refreshToken", "tokenExpiresAt"
+     from "user_integrations"
+     where "userId" = $1 and "provider" = 'dropbox'`,
+    [userId]
+  );
+  if (rows.length === 0) throw new Error("dropbox integration not found");
+
+  const row = rows[0];
+  const expired = row.tokenExpiresAt && new Date(row.tokenExpiresAt) < new Date();
+  if (expired && row.refreshToken) {
+    return refreshDropboxToken(userId, decrypt(row.refreshToken));
+  }
+  return decrypt(row.accessToken);
+}
+
+export async function deleteDropboxFile(userId: string, fileId: string): Promise<void> {
+  const token = await getDropboxToken(userId);
+  const res = await fetch("https://api.dropboxapi.com/2/files/delete_v2", {
+    method: "POST",
+    headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
+    body: JSON.stringify({ path: fileId }),
+  });
+  if (!res.ok) throw new Error(`Dropbox delete failed: ${res.status}`);
+}
+
+export async function renameDropboxFile(userId: string, fromPath: string, newName: string): Promise<void> {
+  const token = await getDropboxToken(userId);
+  const dir = fromPath.lastIndexOf("/") > 0 ? fromPath.slice(0, fromPath.lastIndexOf("/")) : "";
+  const toPath = `${dir}/${newName}`;
+  const res = await fetch("https://api.dropboxapi.com/2/files/move_v2", {
+    method: "POST",
+    headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
+    body: JSON.stringify({ from_path: fromPath, to_path: toPath, autorename: false }),
+  });
+  if (!res.ok) throw new Error(`Dropbox rename failed: ${res.status}`);
+}
+
 export async function downloadDropboxFile(
   userId: string,
   fileId: string

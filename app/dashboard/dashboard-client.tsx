@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo, useEffect } from "react";
+import Link from "next/link";
 import { TopStrip }        from "@/components/dashboard/TopStrip";
 import { PageHeader }      from "@/components/dashboard/PageHeader";
 import { SourcesPanel }    from "@/components/dashboard/SourcesPanel";
@@ -102,6 +103,33 @@ export function DashboardClient() {
     });
   }
 
+  async function onDelete(id: string) {
+    const ws = allRows.find((r) => r.id === id);
+    if (!ws) return;
+    const provider = ws.source === "drive" ? "googledrive" : "dropbox";
+    const res = await fetch(`/api/${provider}/files/${encodeURIComponent(id)}`, { method: "DELETE" });
+    if (res.ok || res.status === 204) {
+      setAllRows((prev) => prev.filter((r) => r.id !== id));
+      setSelected((prev) => { const next = new Set(prev); next.delete(id); return next; });
+    }
+  }
+
+  async function onRename(id: string, newName: string) {
+    const ws = allRows.find((r) => r.id === id);
+    if (!ws) return;
+    const provider = ws.source === "drive" ? "googledrive" : "dropbox";
+    const body: Record<string, string> = { name: newName };
+    if (ws.source === "dropbox") body.path = ws.path;
+    const res = await fetch(`/api/${provider}/files/${encodeURIComponent(id)}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body),
+    });
+    if (res.ok) {
+      setAllRows((prev) => prev.map((r) => r.id === id ? { ...r, name: newName } : r));
+    }
+  }
+
   const rows = useMemo(() => {
     let r = allRows;
     if (source !== "all") r = r.filter((x) => x.source === source);
@@ -152,10 +180,14 @@ export function DashboardClient() {
                 selectedCount={selected.size}
                 onCreateLink={() => setModalOpen(true)}
               />
-              <WorksheetsTable rows={rows} source={source} selected={selected} onToggle={onToggle} />
+              <WorksheetsTable rows={rows} source={source} selected={selected} onToggle={onToggle} onDelete={onDelete} onRename={onRename} />
               <div className="mt-[28px] pt-[22px] border-t border-(--color-border) flex items-center justify-between flex-wrap gap-[14px] font-code text-[10px] tracking-[0.12em] uppercase text-(--color-muted)">
                 <span>showing {rows.length} of {counts.total}</span>
-                <span>tracelight · v0.1 · beta</span>
+                <span className="flex items-center gap-[14px]">
+                  <Link href="/privacy" className="hover:text-(--color-foreground) transition-colors no-underline">Privacy</Link>
+                  <Link href="/terms" className="hover:text-(--color-foreground) transition-colors no-underline">Terms</Link>
+                  <span>tracelight · v0.1 · beta</span>
+                </span>
               </div>
             </section>
 
