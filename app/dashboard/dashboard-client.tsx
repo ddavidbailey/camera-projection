@@ -48,6 +48,16 @@ export function DashboardClient() {
   const [selected,   setSelected]   = useState<Set<string>>(new Set());
   const [modalOpen,  setModalOpen]  = useState(false);
   const [sessionsKey, setSessionsKey] = useState(0);
+  const [page,       setPage]       = useState(0);
+  const [pageSize,   setPageSize]   = useState(10);
+
+  useEffect(() => {
+    const mq = window.matchMedia("(max-width: 880px)");
+    if (mq.matches) setPageSize(5);
+    function handler(e: MediaQueryListEvent) { setPageSize(e.matches ? 5 : 10); setPage(0); }
+    mq.addEventListener("change", handler);
+    return () => mq.removeEventListener("change", handler);
+  }, []);
 
   useEffect(() => {
     async function load() {
@@ -141,6 +151,13 @@ export function DashboardClient() {
     return r;
   }, [allRows, source, search, sort]);
 
+  useEffect(() => { setPage(0); }, [rows]);
+
+  const totalPages = Math.max(1, Math.ceil(rows.length / pageSize));
+  const pagedRows  = rows.slice(page * pageSize, (page + 1) * pageSize);
+  const rangeStart = rows.length === 0 ? 0 : page * pageSize + 1;
+  const rangeEnd   = Math.min((page + 1) * pageSize, rows.length);
+
   return (
     <div className="relative z-[1] flex flex-col min-h-dvh font-ui antialiased [text-rendering:optimizeLegibility] text-(--color-foreground) bg-(--color-background)">
       <div
@@ -180,14 +197,62 @@ export function DashboardClient() {
                 selectedCount={selected.size}
                 onCreateLink={() => setModalOpen(true)}
               />
-              <WorksheetsTable rows={rows} source={source} selected={selected} onToggle={onToggle} onDelete={onDelete} onRename={onRename} />
-              <div className="mt-[28px] pt-[22px] border-t border-(--color-border) flex items-center justify-between flex-wrap gap-[14px] font-code text-[10px] tracking-[0.12em] uppercase text-(--color-muted)">
-                <span>showing {rows.length} of {counts.total}</span>
-                <span className="flex items-center gap-[14px]">
+              <WorksheetsTable rows={pagedRows} source={source} selected={selected} onToggle={onToggle} onDelete={onDelete} onRename={onRename} />
+              <div className="mt-[28px] pt-[22px] border-t border-(--color-border) flex flex-col gap-[12px] font-code text-[10px] tracking-[0.12em] uppercase text-(--color-muted)">
+                {/* Pagination row */}
+                <div className="flex items-center justify-between flex-wrap gap-[12px]">
+                  <span>
+                    {rows.length === 0 ? "0 files" : `${rangeStart}–${rangeEnd} of ${rows.length}${rows.length < counts.total ? ` (${counts.total} total)` : ""}`}
+                  </span>
+
+                  <div className="flex items-center gap-[10px]">
+                    {/* Prev */}
+                    <button
+                      type="button"
+                      disabled={page === 0}
+                      onClick={() => setPage((p) => p - 1)}
+                      className="inline-flex items-center justify-center w-[26px] h-[26px] border border-(--color-border) rounded-[3px] text-(--color-muted) disabled:opacity-30 disabled:cursor-not-allowed hover:not-disabled:text-(--color-foreground) hover:not-disabled:border-(--color-primary) transition-[color,border-color] duration-[0.15s] cursor-pointer"
+                      aria-label="Previous page"
+                    >
+                      ←
+                    </button>
+
+                    {/* Page indicator */}
+                    <span className="tabular-nums">
+                      {page + 1} / {totalPages}
+                    </span>
+
+                    {/* Next */}
+                    <button
+                      type="button"
+                      disabled={page >= totalPages - 1}
+                      onClick={() => setPage((p) => p + 1)}
+                      className="inline-flex items-center justify-center w-[26px] h-[26px] border border-(--color-border) rounded-[3px] text-(--color-muted) disabled:opacity-30 disabled:cursor-not-allowed hover:not-disabled:text-(--color-foreground) hover:not-disabled:border-(--color-primary) transition-[color,border-color] duration-[0.15s] cursor-pointer"
+                      aria-label="Next page"
+                    >
+                      →
+                    </button>
+
+                    {/* Per-page selector */}
+                    <select
+                      value={pageSize}
+                      onChange={(e) => { setPageSize(Number(e.target.value)); setPage(0); }}
+                      className="bg-(--color-background) border border-(--color-border) rounded-[3px] font-code text-[10px] tracking-[0.1em] uppercase text-(--color-muted) px-[7px] py-[4px] cursor-pointer hover:text-(--color-foreground) hover:border-(--color-primary) transition-[color,border-color] duration-[0.15s] ml-[4px]"
+                      aria-label="Files per page"
+                    >
+                      {[5, 10, 15, 20, 25, 30].map((n) => (
+                        <option key={n} value={n}>{n} / page</option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+
+                {/* Legal / version row */}
+                <div className="flex items-center justify-end gap-[14px]">
                   <Link href="/privacy" className="hover:text-(--color-foreground) transition-colors no-underline">Privacy</Link>
                   <Link href="/terms" className="hover:text-(--color-foreground) transition-colors no-underline">Terms</Link>
                   <span>tracelight · v0.1 · beta</span>
-                </span>
+                </div>
               </div>
             </section>
 
