@@ -9,6 +9,7 @@ import { SessionsPanel }   from "@/components/dashboard/SessionsPanel";
 import { FilterBar }       from "@/components/dashboard/FilterBar";
 import { WorksheetsTable } from "@/components/dashboard/WorksheetsTable";
 import { CreateLinkModal } from "@/components/dashboard/CreateLinkModal";
+import { WorksheetPreviewModal } from "@/components/dashboard/WorksheetPreviewModal";
 import { LIVE_IDS, type SourceFilter, type Worksheet, type ThumbVariant } from "@/components/dashboard/data";
 import type { DriveFile } from "@/lib/google-drive";
 import type { DropboxFile } from "@/lib/dropbox";
@@ -47,6 +48,7 @@ export function DashboardClient() {
   const [allRows,    setAllRows]    = useState<Worksheet[]>([]);
   const [selected,   setSelected]   = useState<Set<string>>(new Set());
   const [modalOpen,  setModalOpen]  = useState(false);
+  const [previewWs,  setPreviewWs]  = useState<Worksheet | null>(null);
   const [sessionsKey, setSessionsKey] = useState(0);
   const [page,       setPage]       = useState(0);
   const [pageSize,   setPageSize]   = useState(10);
@@ -197,7 +199,7 @@ export function DashboardClient() {
                 selectedCount={selected.size}
                 onCreateLink={() => setModalOpen(true)}
               />
-              <WorksheetsTable rows={pagedRows} source={source} selected={selected} onToggle={onToggle} onDelete={onDelete} onRename={onRename} />
+              <WorksheetsTable rows={pagedRows} source={source} selected={selected} onToggle={onToggle} onDelete={onDelete} onRename={onRename} onOpen={setPreviewWs} />
               <div className="mt-[28px] pt-[22px] border-t border-(--color-border) flex flex-col gap-[12px] font-code text-[10px] tracking-[0.12em] uppercase text-(--color-muted)">
                 {/* Pagination row */}
                 <div className="flex items-center justify-between flex-wrap gap-[12px]">
@@ -262,6 +264,8 @@ export function DashboardClient() {
           </div>
         </div>
       </main>
+
+      <WorksheetPreviewModal worksheet={previewWs} onClose={() => setPreviewWs(null)} />
 
       <CreateLinkModal
         open={modalOpen}

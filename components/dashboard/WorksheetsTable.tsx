@@ -192,6 +192,7 @@ export function WorksheetsTable({
   onToggle,
   onDelete,
   onRename,
+  onOpen,
 }: {
   rows: Worksheet[];
   source: SourceFilter;
@@ -199,6 +200,7 @@ export function WorksheetsTable({
   onToggle: (id: string) => void;
   onDelete: (id: string) => void;
   onRename: (id: string, newName: string) => void;
+  onOpen: (ws: Worksheet) => void;
 }) {
   const [renamingId, setRenamingId] = useState<string | null>(null);
   const [renamingOriginal, setRenamingOriginal] = useState("");
@@ -312,7 +314,7 @@ export function WorksheetsTable({
 
                 {/* Actions */}
                 <div className="dash-col-actions flex-shrink-0 w-[100px] flex items-center justify-end gap-[6px]">
-                  <button type="button" className={actBase}>Open</button>
+                  <button type="button" className={actBase} onClick={() => onOpen(r)}>Open</button>
                   <OverflowMenu
                     row={r}
                     onRename={startRename}
