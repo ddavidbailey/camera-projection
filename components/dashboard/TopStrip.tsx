@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useRef, useState, useEffect } from "react";
 import { Logomark } from "@/components/tempLink/Logomark";
@@ -46,13 +45,13 @@ export function TopStrip({ search, setSearch }: TopStripProps) {
       }}
     >
       <div className="w-full max-w-[1480px] mx-auto px-8 max-[720px]:px-[18px] flex items-center gap-[18px] h-[60px]">
-        <Link href="/" className="inline-flex items-center gap-[10px] text-(--color-foreground) no-underline">
+        <div className="inline-flex items-center gap-[10px] text-(--color-foreground)">
           <Logomark size={24} />
           <span className="font-heading text-[20px] tracking-[-0.01em]">Tracelight</span>
           <span className="font-code text-[10px] uppercase tracking-[0.14em] text-(--color-muted) px-[7px] py-[3px] border border-(--color-border) rounded-full ml-1">
             beta
           </span>
-        </Link>
+        </div>
 
         <span className="inline-flex items-center gap-[10px] font-code text-[10.5px] tracking-[0.16em] uppercase text-(--color-muted)">
           <span>workspace</span>

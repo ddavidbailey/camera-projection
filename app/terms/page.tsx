@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { headers } from "next/headers";
 import { Logomark } from "@/components/tempLink/Logomark";
+import { auth } from "@/utils/auth";
 
 export const metadata: Metadata = {
   title: "Tracelight — Terms of Service",
@@ -39,7 +41,8 @@ function Section({ n, title, children }: { n: string; title: string; children: R
   );
 }
 
-export default function TermsPage() {
+export default async function TermsPage() {
+  const session = await auth.api.getSession({ headers: await headers() });
   return (
     <div className="relative min-h-dvh flex flex-col font-ui antialiased [text-rendering:optimizeLegibility] text-(--color-foreground) bg-(--color-background)">
       {/* Background gradient */}
@@ -78,12 +81,14 @@ export default function TermsPage() {
 
           <span className="flex-1" />
 
-          <Link
-            href="/dashboard"
-            className="font-code text-[10.5px] tracking-[0.12em] uppercase text-(--color-muted) hover:text-(--color-foreground) transition-colors no-underline"
-          >
-            Back to app
-          </Link>
+          {session && (
+            <Link
+              href="/dashboard"
+              className="font-code text-[10.5px] tracking-[0.12em] uppercase text-(--color-muted) hover:text-(--color-foreground) transition-colors no-underline"
+            >
+              ← Dashboard
+            </Link>
+          )}
         </div>
       </header>
 
@@ -252,9 +257,6 @@ export default function TermsPage() {
       <footer className="relative z-[1] border-t border-(--color-border)">
         <div className="w-full max-w-[720px] mx-auto px-8 max-[600px]:px-[18px] py-[22px] flex items-center justify-between flex-wrap gap-[14px] font-code text-[10px] tracking-[0.12em] uppercase text-(--color-muted)">
           <span>tracelight · v0.1 · beta</span>
-          <Link href="/dashboard" className="hover:text-(--color-foreground) transition-colors no-underline">
-            Back to app →
-          </Link>
         </div>
       </footer>
     </div>
