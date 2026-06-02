@@ -11,6 +11,7 @@ export const auth = betterAuth({
   baseURL: process.env.BETTER_AUTH_URL as string,
   database: new Pool({
     connectionString: process.env.DATABASE_URL as string,
+    ssl: { rejectUnauthorized: true },
   }),
   emailAndPassword: {
     enabled: true,
